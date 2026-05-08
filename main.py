@@ -1,6 +1,29 @@
 import random 
 from  abc import ABC, abstractmethod
 
+def log_action(func):
+    def wrapper(*args, **kwargs):
+        print(f"[LOG] Action: '{func.__name__}' started")
+        result = func(*args, **kwargs)
+        print(f"[LOG] Action: '{func.__name__}' completed")
+        return result
+    return wrapper
+
+class PatientNotFoundError(Exception):
+    pass
+
+
+class DoctorNotFoundError(Exception):
+    pass
+
+
+class SlotNotAvailableError(Exception):
+    pass
+
+
+class AppointmentNotFoundError(Exception):
+    pass
+
 class Person(ABC):
     def __init__(self, name, age, contact):
         self.name = name
@@ -148,12 +171,15 @@ class Hospital:
         self.doctor = {}
         self.appointments = {}
 
+    @log_action
     def register_patient(self, patient):
         self.patient[patient.patient_id] = patient
 
+    @log_action
     def register_doctor(self, doctor):
         self.doctor[doctor.doctor_id] = doctor
 
+    @log_action
     def book_appointment(self, patient_id, doctor_id, time_slot):
         self.patient_id = patient_id
         self.doctor_id = doctor_id
@@ -163,17 +189,18 @@ class Hospital:
         patient = self.patient[patient_id]
     
         if patient_id not in self.patient:
-            raise Exception("Patient not found")
+            raise PatientNotFoundError("Patient not found")
         
         if doctor_id not in self.doctor:
-            raise Exception("Doctor not found")
+            raise DoctorNotFoundError("Doctor not found")
         
         if time_slot not in doctor.available_slots:
-            raise Exception("time slot not available")
+            raise SlotNotAvailableError("time slot not available")
         
+    @log_action
     def cancel_appointment(self, appointment_id):
         if appointment_id not in self.appointments:
-            raise Exception("Appointment not found")
+            raise AppointmentNotFoundError("Appointment not found")
         
         appointment = self.appointments[appointment_id]
         appointment.cancel()
