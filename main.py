@@ -22,7 +22,7 @@ class Patient(Person):
         self.medical_history = []
 
     def get_role(self):
-        return super().get_role()
+        return "Patient"
 
     @property
     def patient_id(self):
@@ -58,7 +58,7 @@ class Doctor(Person):
         self.available_slots = []
 
     def get_role(self):
-        return super().get_role()
+        return "Doctor"
 
     @property
     def doctor_id(self):
@@ -144,8 +144,40 @@ class Appointment:
 
 class Hospital:
     def __init__(self):
-        pass
+        self.patient = {}
+        self.doctor = {}
+        self.appointments = {}
+
+    def register_patient(self, patient):
+        self.patient[patient.patient_id] = patient
+
+    def register_doctor(self, doctor):
+        self.doctor[doctor.doctor_id] = doctor
+
+    def book_appointment(self, patient_id, doctor_id, time_slot):
+        self.patient_id = patient_id
+        self.doctor_id = doctor_id
+        self.time_slot = time_slot
+
+        doctor = self.doctors[doctor_id]
+        patient = self.patient[patient_id]
+    
+        if patient_id not in self.patient:
+            raise Exception("Patient not found")
         
+        if doctor_id not in self.doctor:
+            raise Exception("Doctor not found")
+        
+        if time_slot not in doctor.available_slots:
+            raise Exception("time slot not available")
+        
+    def cancel_appointment(self, appointment_id):
+        if appointment_id not in self.appointments:
+            raise Exception("Appointment not found")
+        
+        appointment = self.appointments[appointment_id]
+        appointment.cancel()
+
 
     
 
