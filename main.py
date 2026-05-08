@@ -98,22 +98,54 @@ class Doctor(Person):
         return False
 
 doc_obj = Doctor("mr. bhatt", 35, 923, 21, "ortho")
-while True:
-    add_time = input("enter the available slot time(HH:MM): ")
-    if Doctor.validate_slot_format(add_time):     
-        doc_obj.add_slot(add_time)
-        print(doc_obj.available_slots)
-        choice = input("Add more slots? (yes/no): ")
-        if choice.lower() == "no":
-            break
-    else:
-        print("invalid date format")
+# while True:
+#     add_time = input("enter the available slot time(HH:MM): ")
+#     if Doctor.validate_slot_format(add_time):     
+#         doc_obj.add_slot(add_time)
+#         print(doc_obj.available_slots)
+#         choice = input("Add more slots? (yes/no): ")
+#         if choice.lower() == "no":
+#             break
+#     else:
+#         print("invalid date format")
+
+# choice = input("Do you want to remove any slot? (yes/no): ")
+# if choice.lower() == "yes":
+#     remove_time = input("enter the slot time(HH:MM) you want to remove: ")
+#     doc_obj.remove_slot(remove_time)
+#     print(doc_obj.available_slots)
+
+class Appointment:
+    count = 1
+    def __init__(self, patient, doctor, time_slot, status="Scheduled"):
+
+        self.appointment_id  = f"APT{str(Appointment.count).zfill(4)}"
+        Appointment.count += 1
+        print(self.appointment_id)
+
+        self.patient = patient
+        self.doctor = doctor
+        self.time_slot = time_slot
+        self.status = status
+
+    def cancel(self):
+        self.status = "Cancelled"
+        self.doctor.add_slot(self.time_slot)
+
+    def __str__(self):
+
+        return f"""
+        Appointment ID : {self.appointment_id}
+        Patient        : {self.patient.name}
+        Doctor         : {self.doctor.name}
+        Time Slot      : {self.time_slot}
+        Status         : {self.status}
+        """
+
+class Hospital:
+    def __init__(self):
+        pass
         
-choice = input("Do you want to remove any slot? (yes/no): ")
-if choice.lower() == "yes":
-    remove_time = input("enter the slot time(HH:MM) you want to remove: ")
-    doc_obj.remove_slot(remove_time)
-    print(doc_obj.available_slots)
 
-
+    
 
