@@ -12,14 +12,11 @@ def log_action(func):
 class PatientNotFoundError(Exception):
     pass
 
-
 class DoctorNotFoundError(Exception):
     pass
 
-
 class SlotNotAvailableError(Exception):
     pass
-
 
 class AppointmentNotFoundError(Exception):
     pass
@@ -196,7 +193,7 @@ class Hospital:
         
         if time_slot not in doctor.available_slots:
             raise SlotNotAvailableError("time slot not available")
-        
+    
     @log_action
     def cancel_appointment(self, appointment_id):
         if appointment_id not in self.appointments:
@@ -205,6 +202,75 @@ class Hospital:
         appointment = self.appointments[appointment_id]
         appointment.cancel()
 
-
+    def get_doctor_appointments(self, doctor_id):
     
+        return list(
+        filter(
+            lambda appointment : appointment.doctor.doctor_id == doctor_id,
+            self.appointments.values()
+        )
+    )
+
+    def get_all_patients(self, sort_by_name=False):
+
+        patients = list(self.patient.values())
+
+        if sort_by_name:
+            patients = sorted(
+                patients,
+                key=lambda patient : patient.name
+            )
+        return patients
+    
+if __name__ == "__main__":
+
+    hospital = Hospital()
+
+    doc1 = Doctor("dr. Rina", 35, 9876543, "D002", "Gyno")
+    doc2 = Doctor("dr. Bedi", 46, 9872345, "D003", "Surgen")
+
+    doc1.add_slot("10.15")
+    doc1.add_slot("11.15")
+    doc2.add_slot("11:30")
+
+    pat1 = Patient("Richa", 22, 9876234, "P012", "A+")
+    pat2 = Patient("Raja Bajaj", 32, 9822223, "P015", "AB+")
+    pat3 = Patient("Ahana ", 29, 984565, "P032", "O+")
+
+    pat1.add_medical_record("PCOD")
+    pat2.add_medical_record("Bone Fracture")
+    pat1.add_medical_record("Fever")
+    pat3.add_medical_record("Sinus")
+
+    hospital.register_doctor(doc1)
+    hospital.register_doctor(doc2)
+
+    hospital.register_patient(pat1)
+    hospital.register_patient(pat2)
+    hospital.register_patient(pat3)
+
+    apt1 = hospital.book_appointment("P012", "D002", 10.15)
+    apt2 = hospital.book_appointment("P015", "D003", 11.30)
+    apt3 = hospital.book_appointment("P032", "D002", 11.15)
+
+    try:
+        hospital.book_appointment("P032", "D002", 10.15)
+    except SlotNotAvailableError as s:
+        print(s)
+
+    try:
+        hospital.book_appointment("P032", "D002", 10.15)
+    except PatientNotFoundError as p:
+        print(p)
+
+    hospital.cancel_appointment(pat3.patient_id)
+    print(doc2.available_slots)
+
+    patients = hospital.get_all_patients(True)
+    for patient in patients:
+        print(patient)
+
+    appointments = hospital.get_doctor_appointments("D001")
+    for appointment in appointments:
+        print(appointment)
 
