@@ -164,7 +164,7 @@ class Appointment:
 
 class Hospital:
     def __init__(self):
-        self.patient = {}
+        self.patients = {}
         self.doctor = {}
         self.appointments = {}
 
@@ -185,7 +185,7 @@ class Hospital:
         doctor = self.doctors[doctor_id]
         patient = self.patient[patient_id]
     
-        if patient_id not in self.patient:
+        if patient_id not in self.patients:
             raise PatientNotFoundError("Patient not found")
         
         if doctor_id not in self.doctor:
@@ -213,7 +213,7 @@ class Hospital:
 
     def get_all_patients(self, sort_by_name=False):
 
-        patients = list(self.patient.values())
+        patients = list(self.patients.values())
 
         if sort_by_name:
             patients = sorted(
@@ -222,6 +222,20 @@ class Hospital:
             )
         return patients
     
+    def patient_report(self, patient_id):
+        if patient_id not in self.patients:
+            return PatientNotFoundError("No patient record found")
+        
+        patient = self.patients[patient_id]
+
+        yield f"Patient Id : {patient.patient_id}"
+        yield f"Patient Name : {patient.name}"
+        yield f"Patient Age : {patient.age}"
+        yield f"Patient Blood Group : {patient.blood_group}"
+
+        for record in patient.medical_history:
+            yield record
+
 if __name__ == "__main__":
 
     hospital = Hospital()
@@ -274,3 +288,5 @@ if __name__ == "__main__":
     for appointment in appointments:
         print(appointment)
 
+    for record in hospital.patient_report("P012"):
+        print(record)
