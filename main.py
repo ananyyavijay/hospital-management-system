@@ -1,4 +1,3 @@
-import random 
 from  abc import ABC, abstractmethod
 
 def log_action(func):
@@ -88,8 +87,6 @@ class Doctor(Person):
         if time not in self.available_slots:
             self.available_slots.append(time)
             print("slot added successfully")
-        else:
-            print("slot already exists")
 
     def remove_slot(self, time):
         if time in self.available_slots:
@@ -126,6 +123,8 @@ doc_obj = Doctor("mr. bhatt", 35, 923, 21, "ortho")
 #         choice = input("Add more slots? (yes/no): ")
 #         if choice.lower() == "no":
 #             break
+#         else:
+#             print("slot already exists")
 #     else:
 #         print("invalid date format")
 
@@ -165,34 +164,37 @@ class Appointment:
 class Hospital:
     def __init__(self):
         self.patients = {}
-        self.doctor = {}
+        self.doctors = {}
         self.appointments = {}
 
     @log_action
     def register_patient(self, patient):
-        self.patient[patient.patient_id] = patient
+        self.patients[patient.patient_id] = patient
 
     @log_action
     def register_doctor(self, doctor):
-        self.doctor[doctor.doctor_id] = doctor
+        self.doctors[doctor.doctor_id] = doctor
 
     @log_action
     def book_appointment(self, patient_id, doctor_id, time_slot):
-        self.patient_id = patient_id
-        self.doctor_id = doctor_id
-        self.time_slot = time_slot
-
-        doctor = self.doctors[doctor_id]
-        patient = self.patient[patient_id]
     
         if patient_id not in self.patients:
             raise PatientNotFoundError("Patient not found")
         
-        if doctor_id not in self.doctor:
+        if doctor_id not in self.doctors:
             raise DoctorNotFoundError("Doctor not found")
+        
+        doctor = self.doctors[doctor_id]
+        patient = self.patients[patient_id]
         
         if time_slot not in doctor.available_slots:
             raise SlotNotAvailableError("time slot not available")
+        
+        appointment = Appointment(patient, doctor, time_slot)
+        self.appointments[appointment.appointment_id] = appointment
+
+        doctor.remove_slot(time_slot)
+        return appointment
     
     @log_action
     def cancel_appointment(self, appointment_id):
@@ -243,8 +245,8 @@ if __name__ == "__main__":
     doc1 = Doctor("dr. Rina", 35, 9876543, "D002", "Gyno")
     doc2 = Doctor("dr. Bedi", 46, 9872345, "D003", "Surgen")
 
-    doc1.add_slot("10.15")
-    doc1.add_slot("11.15")
+    doc1.add_slot("10:15")
+    doc1.add_slot("11:15")
     doc2.add_slot("11:30")
 
     pat1 = Patient("Richa", 22, 9876234, "P012", "A+")
@@ -263,21 +265,21 @@ if __name__ == "__main__":
     hospital.register_patient(pat2)
     hospital.register_patient(pat3)
 
-    apt1 = hospital.book_appointment("P012", "D002", 10.15)
-    apt2 = hospital.book_appointment("P015", "D003", 11.30)
-    apt3 = hospital.book_appointment("P032", "D002", 11.15)
+    apt1 = hospital.book_appointment("P012", "D002", "10:15")
+    apt2 = hospital.book_appointment("P015", "D003", "11:30")
+    apt3 = hospital.book_appointment("P032", "D002", "11:15")
 
     try:
-        hospital.book_appointment("P032", "D002", 10.15)
+        hospital.book_appointment("P032", "D002", "10:15")
     except SlotNotAvailableError as s:
         print(s)
 
     try:
-        hospital.book_appointment("P032", "D002", 10.15)
+        hospital.book_appointment("P042", "D012", "10:15")
     except PatientNotFoundError as p:
         print(p)
 
-    hospital.cancel_appointment(pat3.patient_id)
+    hospital.cancel_appointment(apt1.appointment_id)
     print(doc2.available_slots)
 
     patients = hospital.get_all_patients(True)
