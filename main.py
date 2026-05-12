@@ -11,16 +11,20 @@ def log_action(func):
     return wrapper
 
 class PatientNotFoundError(Exception):
-    pass
+    def __init__(self, message="Patient not found"):
+        super().__init__(message)
 
 class DoctorNotFoundError(Exception):
-    pass
+    def __init__(self, message="Doctor not found"):
+        super().__init__(message)
 
 class SlotNotAvailableError(Exception):
-    pass
+    def __init__(self, message="Slot not available"):
+        super().__init__(message)
 
 class AppointmentNotFoundError(Exception):
-    pass
+    def __init__(self, message="Appointment not found"):
+        super().__init__(message)
 
 class Person(ABC):
     def __init__(self, name, age, contact):
