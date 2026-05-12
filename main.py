@@ -190,6 +190,9 @@ class Hospital:
         if doctor_id not in self.doctors:
             raise DoctorNotFoundError("Doctor not found")
         
+        if not Doctor.validate_slot_format(time_slot):
+            raise ValueError("Invalid slot format")
+        
         doctor = self.doctors[doctor_id]
         patient = self.patients[patient_id]
         
