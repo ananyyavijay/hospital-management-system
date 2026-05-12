@@ -217,7 +217,9 @@ class Hospital:
     
         return list(
         filter(
-            lambda appointment : appointment.doctor.doctor_id == doctor_id,
+            lambda appointment : appointment.doctor.doctor_id == doctor_id
+            and
+            appointment.status == "Scheduled",
             self.appointments.values()
         )
     )
