@@ -235,7 +235,7 @@ class Hospital:
     
     def patient_report(self, patient_id):
         if patient_id not in self.patients:
-            return PatientNotFoundError("No patient record found")
+            raise PatientNotFoundError("No patient record found")
         
         patient = self.patients[patient_id]
 
