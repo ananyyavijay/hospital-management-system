@@ -247,6 +247,14 @@ class Hospital:
         for record in patient.medical_history:
             yield record
 
+    def __str__(self):
+
+        return f"""
+        Total Patients     : {len(self.patients)}
+        Total Doctors      : {len(self.doctors)}
+        Total Appointments : {len(self.appointments)}
+        """
+
 if __name__ == "__main__":
 
     hospital = Hospital()
