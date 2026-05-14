@@ -284,13 +284,13 @@ class Hospital:
                     f"at {appointment.time_slot}"
                 )
 
-    # def __str__(self):
+    def __str__(self):
 
-    #     return f"""
-    #     Total Patients     : {len(self.patients)}
-    #     Total Doctors      : {len(self.doctors)}
-    #     Total Appointments : {len(self.appointments)}
-    #     """
+        return f"""
+        Hospital Summary
+        Total Patients     : {len(self.patients)}
+        Total Appointments : {len(self.appointments)}
+        """
 
     def admin_report(self):
 
