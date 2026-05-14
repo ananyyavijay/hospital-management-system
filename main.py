@@ -112,6 +112,7 @@ class Doctor(Person):
         else:
             print("slot already removed")
 
+    # validated on main branch
     @staticmethod
     def validate_slot_format(slot):
         parts = slot.split(":")
