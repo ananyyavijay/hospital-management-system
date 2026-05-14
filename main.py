@@ -284,13 +284,21 @@ class Hospital:
                     f"at {appointment.time_slot}"
                 )
 
-    def __str__(self):
+    # def __str__(self):
 
-        return f"""
-        Total Patients     : {len(self.patients)}
-        Total Doctors      : {len(self.doctors)}
-        Total Appointments : {len(self.appointments)}
-        """
+    #     return f"""
+    #     Total Patients     : {len(self.patients)}
+    #     Total Doctors      : {len(self.doctors)}
+    #     Total Appointments : {len(self.appointments)}
+    #     """
+
+    def admin_report(self):
+
+        print(f"Hospital has {len(self.patients)} patients")
+
+        print(f"Hospital has {len(self.doctors)} doctors")
+
+        print(f"Hospital has {len(self.appointments)} appointments")
 
 if __name__ == "__main__":
 
