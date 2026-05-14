@@ -18,6 +18,7 @@ def log_action(func):
         except Exception as err:
             print(f"[LOG] {ist_time} | Action: '{func.__name__}'" f"raise {type(err).__name__}: {err}")
             raise
+        return result
     return wrapper
 
 class PatientNotFoundError(Exception):
@@ -251,13 +252,37 @@ class Hospital:
         
         patient = self.patients[patient_id]
 
-        yield f"Patient Id : {patient.patient_id}"
-        yield f"Patient Name : {patient.name}"
-        yield f"Patient Age : {patient.age}"
-        yield f"Patient Blood Group : {patient.blood_group}"
+        yield f"=== Report: {patient.name} (ID: {patient.patient_id}) ==="
+        yield f"Blood Group : {patient.blood_group}"
 
-        for record in patient.medical_history:
-            yield record
+        yield "Medical History: "
+
+        if not patient.medical_history:
+            yield "No records found"
+        else:
+            for index, record in enumerate(patient.medical_history, start=1):
+                yield f"  {index}. {record}"
+        
+        yield "Appointment History:"
+
+        patient_appointments = [
+            appointment
+            for appointment in self.appointments.values()
+            if appointment.patient.patient_id == patient_id
+    ]
+
+        if not patient_appointments:
+            yield "  No appointments found."
+
+        else:
+            for appointment in patient_appointments:
+
+                yield (
+                    f"  [{appointment.status}] "
+                    f"{appointment.appointment_id} — "
+                    f"Dr.{appointment.doctor.name} "
+                    f"at {appointment.time_slot}"
+                )
 
     def __str__(self):
 
