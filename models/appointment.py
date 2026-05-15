@@ -1,26 +1,38 @@
+from dataclasses import dataclass, field, replace
+from typing import ClassVar
+from models.patient import Patient
+from models.doctor import Doctor
+
+@dataclass(frozen=True)
 class Appointment:
-    count = 1
-    def __init__(self, patient, doctor, time_slot, status="Scheduled"):
+    """Immutable appointment record."""
+    _counter: ClassVar[int] = 0
 
-        self.appointment_id  = f"APT{str(Appointment.count).zfill(4)}"
-        Appointment.count += 1
-        print(self.appointment_id)
+    patient: Patient
+    doctor: Doctor
+    time_slot: str
+    status: str = "Scheduled"
+    appointment_id: str = field(init=False)
 
-        self.patient = patient
-        self.doctor = doctor
-        self.time_slot = time_slot
-        self.status = status
+    def __post_init__(self) -> None:
+        Appointment._counter += 1
 
-    def cancel(self):
-        self.status = "Cancelled"
-        self.doctor.add_slot(self.time_slot)
+        object.__setattr__(
+            self,
+            "appointment_id",
+            f"APT{Appointment._counter:04d}"
+        )
 
-    def __str__(self):
+    def cancel(self) -> 'Appointment':
+        # ✏️ Return a new Appointment with status='Cancelled'
+        return replace(self, status = 'Cancelled')
 
-        return f"""
-        Appointment ID : {self.appointment_id}
-        Patient        : {self.patient.name}
-        Doctor         : {self.doctor.name}
-        Time Slot      : {self.time_slot}
-        Status         : {self.status}
-        """
+    def __str__(self) -> str:
+        # ✏️ Clean summary string
+        return (
+            f"Appointment ID: {self.appointment_id}\n"
+            f"Patient       : {self.patient.name}\n"
+            f"Doctor        : {self.doctor.name}\n"
+            f"Time Slot     : {self.time_slot}\n"
+            f"Status        : {self.status}"
+        )
