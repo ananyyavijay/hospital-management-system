@@ -9,9 +9,21 @@ from exceptions.hms_exceptions import (
     SlotNotAvailableError,
     AppointmentNotFoundError
 )
+import asyncio
+from fastapi import FastAPI
+from db.connection import get_connection
+from routers import patients, doctors
+
+app = FastAPI(title="Hospital Management System", version="2.0.0")
+app.include_router(patients.router, prefix="/patients", tags=["Patients"])
+app.include_router(doctors.router,  prefix="/doctors",  tags=["Doctors"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 
-if __name__ == "__main__":
+async def main():
 
 
     hospital = Hospital()
@@ -82,19 +94,19 @@ if __name__ == "__main__":
 
 
     # BOOK APPOINTMENTS 
-    apt1 = hospital.book_appointment(
+    apt1 = await hospital.book_appointment(
         "P012",
         "D002",
         "10:15"
     )
 
-    apt2 = hospital.book_appointment(
+    apt2 = await hospital.book_appointment(
         "P015",
         "D003",
         "11:30"
     )
 
-    apt3 = hospital.book_appointment(
+    apt3 = await hospital.book_appointment(
         "P032",
         "D002",
         "11:15"
@@ -105,7 +117,7 @@ if __name__ == "__main__":
 
     try:
 
-        hospital.book_appointment(
+        await hospital.book_appointment(
             "P032",
             "D002",
             "10:15"
@@ -120,7 +132,7 @@ if __name__ == "__main__":
 
     try:
 
-        hospital.book_appointment(
+        await hospital.book_appointment(
             "P999",
             "D002",
             "10:15"
@@ -186,9 +198,12 @@ if __name__ == "__main__":
     # ADMIN REPORT #
 
     print("\nADMIN REPORT:\n")
-
     hospital.admin_report()
+    await asyncio.sleep(1)
 
+if __name__ == "__main__":
+
+    asyncio.run(main())
 
 
 
