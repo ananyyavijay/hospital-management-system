@@ -1,36 +1,73 @@
-from dataclasses import dataclass, field
-from typing import List
+from sqlalchemy import (
+    String, Integer, Boolean, DateTime, ForeignKey, create_engine
+)
+from sqlalchemy.orm import (
+    DeclarativeBase, Mapped, mapped_column, relationship, Session
+)
+from sqlalchemy.sql import func
+from typing import Optional, List
+from datetime import datetime
+from database import Base
 
-@dataclass
-class Patient:
-    name: str
-    blood_group: str
-    patient_id: str
-    age: int = 0
-    medical_history: List[str] = field(default_factory=list)
-    is_active: bool = True
+class Base(DeclarativeBase):
+    pass
+
+# ✏️ Write Patient model
+class Patient(Base):
+    __tablename__ = "patients"
+    # Your columns and relationships here
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    patient_id: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        unique=True
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+
+    blood_group: Mapped[str] = mapped_column(
+        String(5),
+        nullable=False
+    )
+
+    age: Mapped[int] = mapped_column(
+        Integer,
+        default=0
+    )
     
-    def __post_init__(self) -> None:
-        if not self.patient_id.startswith('P'):
-            raise ValueError("Invalid Patient Id")
-            
-        if not self.name :
-            raise ValueError("Name is required")
+    contact: Mapped[str | None] = mapped_column(
+        String(15),
+        nullable=True
+    )
 
-        if self.age < 0:
-            raise ValueError("age cannot be less then 0")
-        
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True
+    )
 
-    def add_record(self, record: str) -> None:
-        self.medical_history.append(record)
-        
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now()
+    )
 
-    def get_history(self) -> str:
-        if not self.medical_history:
-            return "No records found"
+    appointments: Mapped[list["Appointment"]] = relationship(
+        back_populates="patient",
+        cascade="all, delete-orphan"
+    )
 
-        result = []
-            
-        for index, record in enumerate(self.medical_history, start=1):
-            result.append(f"{index}.{record}")
-        return "\n".join(result)
+    def __repr__(self) -> str:
+        return (
+            f"Patient("
+            f"patient_id='{self.patient_id}', "
+            f"name='{self.name}', "
+            f"blood_group='{self.blood_group}'"
+            f")"
+        )

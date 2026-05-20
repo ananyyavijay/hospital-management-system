@@ -1,45 +1,62 @@
-from dataclasses import dataclass, field
-from typing import List
+from sqlalchemy import (
+    String, Integer, Boolean, DateTime, ForeignKey, create_engine
+)
+from sqlalchemy.orm import (
+    DeclarativeBase, Mapped, mapped_column, relationship, Session
+)
+from sqlalchemy.sql import func
+from typing import Optional, List
+from datetime import datetime
+from database import Base
 
-@dataclass
-class Doctor:
-    name: str
-    specialization: str
-    doctor_id: str
-    available_slots: List[str] = field(default_factory=list)
-    is_active: bool = True
+class Base(DeclarativeBase):
+    pass
 
-    def __post_init__(self) -> None:
-        if not self.doctor_id.startswith('D'):
-            raise ValueError("Invalid Doctor Id")
+class Doctor(Base):
+    __tablename__ = "doctors"
+    # Your columns and relationships here
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
 
-        if not self.name:
-            raise ValueError("Name is required")
+    doctor_id: Mapped[str] = mapped_column(
+        String(10),
+        unique=True,
+        nullable=False
+    )
 
-    def add_slot(self, slot: str) -> None:
-        self.available_slots.append(slot)
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
 
-    def remove_slot(self, slot: str) -> bool:
-        if slot in self.available_slots:
-            self.available_slots.remove(slot)
-            return True
-        return False
-    
-    @staticmethod
-    def validate_slot_format(slot):
-        parts = slot.split(":")
+    specialization: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
 
-        if len(parts) != 2:
-            return False
-        
-        hours, minutes = parts
-        if not (hours.isdigit() and minutes.isdigit()):
-            return False
-        
-        hours = int(hours)
-        minutes = int(minutes)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True
+    )
 
-        if 0 <= hours <= 23 and 0 <= minutes <= 59:
-            return True
-        
-        return False
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now()
+    )
+
+    appointments: Mapped[list["Appointment"]] = relationship(
+        back_populates="doctor",
+        cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"Doctor("
+            f"doctor_id='{self.doctor_id}', "
+            f"name='{self.name}', "
+            f"specialization='{self.specialization}'"
+            f")"
+        )
