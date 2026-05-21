@@ -9,8 +9,8 @@ from typing import Optional, List
 from datetime import datetime
 from database import Base
 
-class Base(DeclarativeBase):
-    pass
+# class Base(DeclarativeBase):
+#     pass
 
 class Doctor(Base):
     __tablename__ = "doctors"
