@@ -1,79 +1,70 @@
-from fastapi import APIRouter, HTTPException
-from psycopg2.extras import RealDictCursor
-from db.connection import get_connection
+from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+
+from database import get_db
+from models.doctor import Doctor
+from schemas.doctor import DoctorCreate, DoctorResponse
 
 router = APIRouter()
 
-@router.post("", status_code=201)
+def generate_doctor_id(db: Session):
+
+    count = db.scalar(
+        select(func.count()).select_from(Doctor)
+    ) + 1
+
+    return f"D{count:03d}"
+
+@router.post("", response_model=DoctorResponse, status_code=status.HTTP_201_CREATED)
 def create_doctors(
-    name: str,
-    specialization: str
+    doctor: DoctorCreate,
+    db: Session = Depends(get_db)
 ):
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
+    doctor_id = generate_doctor_id(db)
+    
+    new_doctor = Doctor(
+        doctor_id=doctor_id,
+        name=doctor.name,
+        specialization=doctor.specialization,
+        experience=doctor.experience,
+        contact=doctor.contact,
+        is_active=True
+    )
 
-    cursor.execute("""
-        SELECT COALESCE(MAX(id), 0) FROM doctors
-    """)
+    db.add(new_doctor)
+    db.commit()
+    db.refresh(new_doctor)
+    return new_doctor
 
-    count = int(cursor.fetchone()["coalesce"]) + 1
-    doctor_id = f"D{count:03d}"
+@router.get("", response_model=list[DoctorResponse])
+def list_doctors(
+    specialization: str | None = None,
+    db: Session = Depends(get_db)
+):
 
-    query = """
-        INSERT INTO doctors(doctor_id, name, specialization)
-        VALUES(%s, %s, %s)
-        RETURNING *
-    """
+    query = select(Doctor).where(
+        Doctor.is_active == True
+    )
+    if specialization:
+        query = query.where(
+            Doctor.specialization == specialization
+        )
 
-    cursor.execute(query, (doctor_id, name, specialization))
-
-    doctor = cursor.fetchone()
-    connection.commit()
-
-    cursor.close()
-    connection.close()
-
-    return doctor
-
-@router.get("")
-def list_doctors():
-
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
-
-    query = """
-        SELECT doctor_id, name, specialization
-        FROM doctors
-        WHERE is_active = TRUE
-    """
-    cursor.execute(query)
-
-    doctors = cursor.fetchall()
-
-    cursor.close()
-    connection.close()
+    doctors = db.execute(query).scalars().all()
 
     return doctors
 
 
-@router.get("/{doctor_id}")
-def get_doctor(doctor_id: str):
+@router.get("/{doctor_id}", response_model=DoctorResponse)
+def get_doctor(doctor_id: str,
+    db: Session = Depends(get_db)):
 
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
-
-    query = """
-        SELECT doctor_id, name, specialization
-        FROM doctors
-        WHERE doctor_id = %s
-        AND is_active = TRUE
-    """
-    cursor.execute(query, (doctor_id,))
-    
-    doctor = cursor.fetchone()
-
-    cursor.close()
-    connection.close()
+    query = select(Doctor).where(
+        Doctor.doctor_id == doctor_id,
+        Doctor.is_active == True
+    )
+    doctor = db.execute(query).scalar_one_or_none()
 
     if doctor is None:
         raise HTTPException(
@@ -81,3 +72,31 @@ def get_doctor(doctor_id: str):
             detail="Doctor not found"
         )
     return doctor
+
+@router.delete(
+    "/{doctor_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_doctor(
+    doctor_id: str,
+    db: Session = Depends(get_db)
+):
+
+    query = select(Doctor).where(
+        Doctor.doctor_id == doctor_id,
+        Doctor.is_active == True
+    )
+
+    doctor = db.execute(query).scalar_one_or_none()
+
+    if doctor is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Doctor not found"
+        )
+
+    doctor.is_active = False
+
+    db.commit()
+
+    return

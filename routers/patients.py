@@ -1,107 +1,92 @@
-from fastapi import APIRouter,HTTPException
-from psycopg2.extras import RealDictCursor
+from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 
-from db.connection import get_connection
+from database import get_db
+from models.patient import Patient
+from schemas.patient import PatientCreate, PatientResponse
 
 router = APIRouter()
 
-@router.post("", status_code=201)
+
+# Helper function for auto ID generation
+def generate_patient_id(db: Session):
+
+    count = db.query(Patient).count() + 1
+
+    return f"P{count:03d}"
+
+
+# CREATE PATIENT
+@router.post(
+    "",
+    response_model=PatientResponse,
+    status_code=status.HTTP_201_CREATED
+)
 def create_patient(
-    name: str,
-    blood_group: str,
-    age: int,
-    contact: str | None = None
+    patient: PatientCreate,
+    db: Session = Depends(get_db)
 ):
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("""
-        SELECT COALESCE(MAX(id), 0) FROM patients
-    """)
+    patient_id = generate_patient_id(db)
 
-    count = int(cursor.fetchone()["coalesce"]) + 1
-    patient_id = f"P{count:03d}"
-
-    query = """
-    INSERT INTO patients(
-    patient_id,
-        name,
-        blood_group,
-        age,
-        contact
-    )
-    VALUES (%s, %s, %s, %s, %s)
-    RETURNING *;
-    """
-
-    cursor.execute(
-        query,
-        (
-            patient_id,
-            name,
-            blood_group,
-            age,
-            contact
-        )
+    new_patient = Patient(
+        patient_id=patient_id,
+        name=patient.name,
+        blood_group=patient.blood_group,
+        age=patient.age,
+        contact=patient.contact,
+        is_active=True
     )
 
-    patient = cursor.fetchone()
-    connection.commit()
+    db.add(new_patient)
 
-    cursor.close()
-    connection.close()
+    db.commit()
 
-    return patient
+    db.refresh(new_patient)
 
-@router.get("")
+    return new_patient
+
+
+# GET ALL PATIENTS
+@router.get(
+    "",
+    response_model=list[PatientResponse]
+)
 def list_patients(
-    blood_group: str | None = None
+    blood_group: str | None = None,
+    db: Session = Depends(get_db)
 ):
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+    query = select(Patient).where(
+        Patient.is_active == True
+    )
 
     if blood_group:
-        query =  """
-        SELECT patient_id, name, blood_group, age, contact 
-        FROM patients
-        WHERE blood_group = %s
-        AND is_active = TRUE
-        """
+        query = query.where(
+            Patient.blood_group == blood_group
+        )
 
-        cursor.execute(query, (blood_group,))
-
-    else:
-        query =  """
-        SELECT patient_id, name, blood_group, age, contact 
-        FROM patients
-        WHERE is_active = TRUE
-        """
-        cursor.execute(query)
-    
-    patients = cursor.fetchall()
-
-    cursor.close()
-    connection.close()
+    patients = db.execute(query).scalars().all()
 
     return patients
 
-@router.get("/{patient_id}")
-def get_patient(patient_id: str):
 
-    connection = get_connection()
-    cursor = connection.cursor(cursor_factory=RealDictCursor)
+# GET PATIENT BY ID
+@router.get(
+    "/{patient_id}",
+    response_model=PatientResponse
+)
+def get_patient(
+    patient_id: str,
+    db: Session = Depends(get_db)
+):
 
-    query = """
-    SELECT patient_id, name, blood_group, age, contact
-    FROM patients
-    WHERE patient_id = %s
-    AND is_active = TRUE
-    """
-    cursor.execute(query,(patient_id,))
+    query = select(Patient).where(
+        Patient.patient_id == patient_id
+    )
 
-    patient = cursor.fetchone()
-    cursor.close()
-    connection.close()
+    patient = db.execute(query).scalar_one_or_none()
 
     if patient is None:
         raise HTTPException(
@@ -110,3 +95,32 @@ def get_patient(patient_id: str):
         )
 
     return patient
+
+
+# SOFT DELETE
+@router.delete(
+    "/{patient_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_patient(
+    patient_id: str,
+    db: Session = Depends(get_db)
+):
+
+    query = select(Patient).where(
+        Patient.patient_id == patient_id
+    )
+
+    patient = db.execute(query).scalar_one_or_none()
+
+    if patient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Patient not found"
+        )
+
+    patient.is_active = False
+
+    db.commit()
+
+    return

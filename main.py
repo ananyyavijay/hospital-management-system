@@ -18,6 +18,10 @@ app = FastAPI(title="Hospital Management System", version="2.0.0")
 app.include_router(patients.router, prefix="/patients", tags=["Patients"])
 app.include_router(doctors.router,  prefix="/doctors",  tags=["Doctors"])
 
+@app.get("/")
+def home():
+    return {"message": "Hospital API Running"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
@@ -29,181 +33,189 @@ async def main():
     hospital = Hospital()
 
 
-    # DOCTORS #
+    # # DOCTORS #
 
-    doc1 = Doctor(
-    "Dr. Rina",
-    "Gynecologist",
-    "D002"
-    )
+    # doc1 = Doctor(
+    # doctor_id="D002",
+    # name="Dr. Rina",
+    # specialization="Gynecologist",
+    # is_active=True
+    # )
 
-    doc2 = Doctor(
-    "Dr. Bedi",
-    "Surgeon",
-    "D003"
-    )
+    # doc2 = Doctor(
+    #     doctor_id="D003",
+    #     name="Dr. Bedi",
+    #     specialization="Surgeon",
+    #     is_active=True
+    # )
 
 
-    doc1.add_slot("10:15")
-    doc1.add_slot("11:15")
+    # doc1.add_slot("10:15")
+    # doc1.add_slot("11:15")
 
-    doc2.add_slot("11:30")
+    # doc2.add_slot("11:30")
 
 
-    # PATIENTS #
+    # # PATIENTS #
 
-    pat1 = Patient(
-    "Richa",
-    "A+",
-    "P012",
-    22
-    )
+    # pat1 = Patient(
+    # patient_id="P012",
+    # name="Richa",
+    # blood_group="A+",
+    # age=22,
+    # contact="9876543211",
+    # is_active=True
+    # )
 
-    pat2 = Patient(
-    "Raja Bajaj",
-    "AB+",
-    "P015",
-    32
-    )
+    # pat2 = Patient(
+    #     patient_id="P015",
+    #     name="Raja Bajaj",
+    #     blood_group="AB+",
+    #     age=32,
+    #     contact="9876543212",
+    #     is_active=True
+    # )
 
-    pat3 = Patient(
-    "Ahana",
-    "O+",
-    "P032",
-    29
-    )
+    # pat3 = Patient(
+    #     patient_id="P032",
+    #     name="Ahana",
+    #     blood_group="O+",
+    #     age=29,
+    #     contact="9876543213",
+    #     is_active=True
+    # )
 
-    # MEDICAL RECORDS  #
+    # # MEDICAL RECORDS  #
 
-    pat1.add_record("PCOD")
+    # pat1.add_record("PCOD")
 
-    pat2.add_record("Bone Fracture")
+    # pat2.add_record("Bone Fracture")
 
-    pat1.add_record("Fever")
+    # pat1.add_record("Fever")
 
-    pat3.add_record("Sinus")
+    # pat3.add_record("Sinus")
 
-    # REGISTER #
+    # # REGISTER #
 
-    hospital.register_doctor(doc1)
-    hospital.register_doctor(doc2)
+    # hospital.register_doctor(doc1)
+    # hospital.register_doctor(doc2)
 
-    hospital.register_patient(pat1)
-    hospital.register_patient(pat2)
-    hospital.register_patient(pat3)
+    # hospital.register_patient(pat1)
+    # hospital.register_patient(pat2)
+    # hospital.register_patient(pat3)
 
 
-    # BOOK APPOINTMENTS 
-    apt1 = await hospital.book_appointment(
-        "P012",
-        "D002",
-        "10:15"
-    )
+    # # BOOK APPOINTMENTS 
+    # apt1 = await hospital.book_appointment(
+    #     "P012",
+    #     "D002",
+    #     "10:15"
+    # )
 
-    apt2 = await hospital.book_appointment(
-        "P015",
-        "D003",
-        "11:30"
-    )
+    # apt2 = await hospital.book_appointment(
+    #     "P015",
+    #     "D003",
+    #     "11:30"
+    # )
 
-    apt3 = await hospital.book_appointment(
-        "P032",
-        "D002",
-        "11:15"
-    )
+    # apt3 = await hospital.book_appointment(
+    #     "P032",
+    #     "D002",
+    #     "11:15"
+    # )
 
 
-    #  SLOT ERROR TEST #
+    # #  SLOT ERROR TEST #
 
-    try:
+    # try:
 
-        await hospital.book_appointment(
-            "P032",
-            "D002",
-            "10:15"
-        )
+    #     await hospital.book_appointment(
+    #         "P032",
+    #         "D002",
+    #         "10:15"
+    #     )
 
-    except SlotNotAvailableError as s:
+    # except SlotNotAvailableError as s:
 
-        print(s)
+    #     print(s)
 
 
-    # INVALID PATIENT TEST #
+    # # INVALID PATIENT TEST #
 
-    try:
+    # try:
 
-        await hospital.book_appointment(
-            "P999",
-            "D002",
-            "10:15"
-        )
+    #     await hospital.book_appointment(
+    #         "P999",
+    #         "D002",
+    #         "10:15"
+    #     )
 
-    except PatientNotFoundError as p:
+    # except PatientNotFoundError as p:
 
-        print(p)
+    #     print(p)
 
 
-    # CANCEL APPOINTMENT #
+    # # CANCEL APPOINTMENT #
 
-    hospital.cancel_appointment(
-        apt3.appointment_id
-    )
+    # hospital.cancel_appointment(
+    #     apt3.appointment_id
+    # )
 
-    print(doc1.available_slots)
+    # print(doc1.available_slots)
 
 
-    # HOSPITAL SUMMARY #
+    # # HOSPITAL SUMMARY #
 
-    print(hospital)
+    # print(hospital)
 
 
-    # SORTED PATIENTS  #
+    # # SORTED PATIENTS  #
 
-    print("\nSORTED PATIENTS:\n")
+    # print("\nSORTED PATIENTS:\n")
 
 
-    patients = hospital.get_all_patients(True)
+    # patients = hospital.get_all_patients(True)
 
-    for patient in patients:
+    # for patient in patients:
 
-        print(patient)
+    #     print(patient)
 
-        print("-" * 40)
+    #     print("-" * 40)
 
 
-    # DOCTOR APPOINTMENTS #
+    # # DOCTOR APPOINTMENTS #
 
-    print("\nDOCTOR APPOINTMENTS:\n")
+    # print("\nDOCTOR APPOINTMENTS:\n")
 
 
-    appointments = hospital.get_doctor_appointments("D002")
+    # appointments = hospital.get_doctor_appointments("D002")
 
-    for appointment in appointments:
+    # for appointment in appointments:
 
-        print(appointment)
+    #     print(appointment)
 
-        print("-" * 40)
+    #     print("-" * 40)
 
 
-    # PATIENT REPORT #
+    # # PATIENT REPORT #
 
-    print("\nPATIENT REPORT:\n")
+    # print("\nPATIENT REPORT:\n")
 
 
-    for record in hospital.patient_report("P012"):
+    # for record in hospital.patient_report("P012"):
 
-        print(record)
+    #     print(record)
 
 
-    # ADMIN REPORT #
+    # # ADMIN REPORT #
 
-    print("\nADMIN REPORT:\n")
-    hospital.admin_report()
-    await asyncio.sleep(1)
+    # print("\nADMIN REPORT:\n")
+    # hospital.admin_report()
+    # await asyncio.sleep(1)
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    asyncio.run(main())
+#     asyncio.run(main())
 
 
 
