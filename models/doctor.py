@@ -1,5 +1,6 @@
+from __future__ import annotations
 from sqlalchemy import (
-    String, Integer, Boolean, DateTime, ForeignKey, create_engine
+    String, Integer, Boolean, DateTime, ForeignKey, create_engine, JSON
 )
 from sqlalchemy.orm import (
     DeclarativeBase, Mapped, mapped_column, relationship, Session
@@ -8,6 +9,9 @@ from sqlalchemy.sql import func
 from typing import Optional, List
 from datetime import datetime
 from database import Base
+from models.patient import Patient
+# from models.doctor import Doctor
+from models.appointment import Appointment
 
 # class Base(DeclarativeBase):
 #     pass
@@ -46,6 +50,8 @@ class Doctor(Base):
         DateTime,
         server_default=func.now()
     )
+
+    available_slots: Mapped[list] = mapped_column(JSON, default=list)
 
     appointments: Mapped[list["Appointment"]] = relationship(
         back_populates="doctor",

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from sqlalchemy import (
     String, Integer, Boolean, DateTime, ForeignKey, create_engine
 )
@@ -8,6 +9,7 @@ from sqlalchemy.sql import func
 from typing import Optional, List
 from datetime import datetime
 from database import Base
+from models.appointment import Appointment
 
 # class Base(DeclarativeBase):
 #     pass

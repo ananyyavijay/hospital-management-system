@@ -1,16 +1,15 @@
+from __future__ import annotations
 from sqlalchemy import (
     String, Integer, Boolean, DateTime, ForeignKey, create_engine
 )
 from sqlalchemy.orm import (
     DeclarativeBase, Mapped, mapped_column, relationship, Session
 )
+
 from sqlalchemy.sql import func
 from typing import Optional, List
 from datetime import datetime
 from database import Base
-
-# class Base(DeclarativeBase):
-#     pass
 
 class Appointment(Base):
     __tablename__ = "appointments"
