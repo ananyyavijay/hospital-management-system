@@ -27,8 +27,6 @@ def create_doctors(
         doctor_id=doctor_id,
         name=doctor.name,
         specialization=doctor.specialization,
-        experience=doctor.experience,
-        contact=doctor.contact,
         is_active=True
     )
 
