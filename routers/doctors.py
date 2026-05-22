@@ -5,6 +5,9 @@ from sqlalchemy import select, func
 from database import get_db
 from models.doctor import Doctor
 from schemas.doctor import DoctorCreate, DoctorResponse
+from dependencies import get_current_user
+from models.user import User
+from dependencies import require_role
 
 router = APIRouter()
 
@@ -19,8 +22,9 @@ def generate_doctor_id(db: Session):
 @router.post("", response_model=DoctorResponse, status_code=status.HTTP_201_CREATED)
 def create_doctors(
     doctor: DoctorCreate,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
     doctor_id = generate_doctor_id(db)
     
     new_doctor = Doctor(
@@ -38,8 +42,9 @@ def create_doctors(
 @router.get("", response_model=list[DoctorResponse])
 def list_doctors(
     specialization: str | None = None,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
 
     query = select(Doctor).where(
         Doctor.is_active == True
@@ -56,7 +61,8 @@ def list_doctors(
 
 @router.get("/{doctor_id}", response_model=DoctorResponse)
 def get_doctor(doctor_id: str,
-    db: Session = Depends(get_db)):
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    ):
 
     query = select(Doctor).where(
         Doctor.doctor_id == doctor_id,
@@ -77,8 +83,9 @@ def get_doctor(doctor_id: str,
 )
 def delete_doctor(
     doctor_id: str,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
 
     query = select(Doctor).where(
         Doctor.doctor_id == doctor_id,
@@ -98,3 +105,22 @@ def delete_doctor(
     db.commit()
 
     return
+
+@router.get(
+    "/admin/doctors",
+    response_model=list[DoctorResponse]
+)
+def admin_doctors(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("admin")
+    )
+):
+
+    query = select(Doctor).where(
+        Doctor.is_active == True
+    )
+
+    doctors = db.execute(query).scalars().all()
+
+    return doctors

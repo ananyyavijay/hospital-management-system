@@ -10,6 +10,8 @@ from schemas.appointment import (
     AppointmentCreate,
     AppointmentResponse
 )
+from dependencies import get_current_user
+from models.user import User
 
 router = APIRouter()
 
@@ -25,14 +27,15 @@ def generate_appointment_id(db: Session):
 
 # Create Appointment
 @router.post(
-    "",
+    "/book",
     response_model=AppointmentResponse,
     status_code=status.HTTP_201_CREATED
 )
 def create_appointment(
     appointment: AppointmentCreate,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
 
     # Check Patient
     patient_query = select(Patient).where(
@@ -165,7 +168,8 @@ def get_appointment(
 )
 def cancel_appointment(
     appointment_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     query = select(Appointment).where(

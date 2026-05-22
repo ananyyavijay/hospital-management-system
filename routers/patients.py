@@ -5,6 +5,9 @@ from sqlalchemy import select
 from database import get_db
 from models.patient import Patient
 from schemas.patient import PatientCreate, PatientResponse
+from dependencies import get_current_user
+from models.user import User
+from dependencies import require_role
 
 router = APIRouter()
 
@@ -25,7 +28,8 @@ def generate_patient_id(db: Session):
 )
 def create_patient(
     patient: PatientCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     patient_id = generate_patient_id(db)
@@ -55,7 +59,8 @@ def create_patient(
 )
 def list_patients(
     blood_group: str | None = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     query = select(Patient).where(
@@ -79,7 +84,8 @@ def list_patients(
 )
 def get_patient(
     patient_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     query = select(Patient).where(
@@ -104,7 +110,8 @@ def get_patient(
 )
 def delete_patient(
     patient_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     query = select(Patient).where(
@@ -124,3 +131,22 @@ def delete_patient(
     db.commit()
 
     return
+
+@router.get(
+    "/admin/patients",
+    response_model=list[PatientResponse]
+)
+def admin_patients(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("admin")
+    )
+):
+
+    query = select(Patient).where(
+        Patient.is_active == True
+    )
+
+    patients = db.execute(query).scalars().all()
+
+    return patients
