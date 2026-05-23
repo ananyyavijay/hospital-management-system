@@ -1,6 +1,3 @@
-from models.patient import Patient
-from models.doctor import Doctor
-
 from services.hospital_service import Hospital
 
 from exceptions.hms_exceptions import (
@@ -12,12 +9,59 @@ from exceptions.hms_exceptions import (
 import asyncio
 from fastapi import FastAPI
 from db.connection import get_connection
-from routers import patients, doctors, appointments
+from routers import patients, doctors, appointments, auth, availability, dashboard, records, admin
 
-app = FastAPI(title="Hospital Management System", version="2.0.0")
-app.include_router(patients.router, prefix="/patients", tags=["Patients"])
-app.include_router(doctors.router,  prefix="/doctors",  tags=["Doctors"])
-app.include_router(appointments.router,  prefix="/appointments",  tags=["Appointment"])
+from models.patient import Patient
+from models.doctor import Doctor
+from models.appointment import Appointment
+from models.medical_record import MedicalRecord
+from models.user import User
+
+app = FastAPI(
+    title="Hospital Management System",
+    version="2.0.0"
+)
+
+app.include_router(
+    patients.router,
+    prefix="/patients",
+    tags=["Patients"]
+)
+
+app.include_router(
+    doctors.router,
+    prefix="/doctors",
+    tags=["Doctors"]
+)
+
+app.include_router(
+    appointments.router,
+    prefix="/appointments",
+    tags=["Appointments"]
+)
+app.include_router(
+    availability.router,
+    prefix="/doctors",
+    tags=["Availability"]
+)
+
+app.include_router(
+    dashboard.router,
+    prefix="/patients",
+    tags=["Dashboard"]
+)
+
+app.include_router(
+    records.router,
+    prefix="/patients",
+    tags=["Medical Records"]
+)
+
+app.include_router(
+    admin.router,
+    prefix="/admin",
+    tags=["Admin"]
+)
 
 @app.get("/")
 def home():

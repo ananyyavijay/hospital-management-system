@@ -6,11 +6,8 @@ from sqlalchemy.orm import (
     DeclarativeBase, Mapped, mapped_column, relationship, Session
 )
 from sqlalchemy.sql import func
-from typing import Optional, List
 from datetime import datetime
 from database import Base
-from models.patient import Patient
-# from models.doctor import Doctor
 from models.appointment import Appointment
 
 # class Base(DeclarativeBase):
@@ -41,6 +38,11 @@ class Doctor(Base):
         nullable=False
     )
 
+    availability: Mapped[dict] = mapped_column(
+        JSON,
+        default=dict
+    )
+
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         default=True
@@ -51,7 +53,7 @@ class Doctor(Base):
         server_default=func.now()
     )
 
-    available_slots: Mapped[list] = mapped_column(JSON, default=list)
+    # available_slots: Mapped[list] = mapped_column(JSON, default=list)
 
     appointments: Mapped[list["Appointment"]] = relationship(
         back_populates="doctor",
