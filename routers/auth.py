@@ -25,10 +25,7 @@ from utils.auth import (
 from dependencies import get_current_user
 
 # ── Router ────────────────────────────────────────────────────────────────
-router = APIRouter(
-    prefix="/auth",
-    tags=["Auth"]
-)
+router = APIRouter()
 
 # ── POST /auth/register ───────────────────────────────────────────────────
 @router.post(

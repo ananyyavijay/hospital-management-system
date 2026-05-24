@@ -32,13 +32,8 @@ router = APIRouter(
     tags=["Medical Records"]
 )
 
-
-# ── Upload Directory ──────────────────────────────────────────────────────────
-
 UPLOAD_ROOT = Path("./uploads")
 
-
-# ── Allowed File Types ───────────────────────────────────────────────────────
 
 ALLOWED_TYPES = {
     "application/pdf",
@@ -46,8 +41,6 @@ ALLOWED_TYPES = {
     "image/png"
 }
 
-
-# ── Helper Function ───────────────────────────────────────────────────────────
 
 def generate_record_id(db: Session):
 
@@ -59,8 +52,6 @@ def generate_record_id(db: Session):
 
     return f"REC{count + 1:03d}"
 
-
-# ── Upload Medical Record ─────────────────────────────────────────────────────
 
 @router.post(
     "/{patient_id}/records",
@@ -133,7 +124,7 @@ async def upload_record(
         file_path=str(file_path),
         file_type=file.content_type,
         size_kb=size_kb,
-        uploaded_at=str(datetime.now())
+        uploaded_at=datetime.now()
     )
 
     db.add(record)
@@ -144,8 +135,6 @@ async def upload_record(
 
     return record
 
-
-# ── List Medical Records ──────────────────────────────────────────────────────
 
 @router.get(
     "/{patient_id}/records",
@@ -176,8 +165,6 @@ def list_records(
 
     return records
 
-
-# ── Delete Medical Record ─────────────────────────────────────────────────────
 
 @router.delete(
     "/{patient_id}/records/{record_id}",

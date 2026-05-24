@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import List, Dict
+from datetime import datetime
 import re
 
 from database import get_db
@@ -10,9 +11,9 @@ from models.doctor import Doctor
 
 
 router = APIRouter(
-    prefix="/doctors",
     tags=["Availability"]
 )
+
 
 class SetAvailabilityRequest(BaseModel):
     date: str
@@ -69,10 +70,52 @@ def set_availability(
             detail="Doctor not found"
         )
 
-    if doctor.availability is None:
-        doctor.availability = {}
+    # Existing availability
+    availability = dict(doctor.availability or {})
 
-    doctor.availability[data.date] = data.slots
+    # Create date key if not present
+    if data.date not in availability:
+        availability[data.date] = []
+
+    # Existing slots
+    existing_slots = set()
+
+    # Convert old slots back to 24-hour for sorting consistency
+    for slot in availability[data.date]:
+
+        try:
+            old_time = datetime.strptime(
+                slot,
+                "%I:%M %p"
+            ).strftime("%H:%M")
+
+            existing_slots.add(old_time)
+
+        except:
+            existing_slots.add(slot)
+
+    # Add new slots
+    for slot in data.slots:
+        existing_slots.add(slot)
+
+    # Sort chronologically
+    sorted_slots = sorted(
+        existing_slots,
+        key=lambda x: datetime.strptime(x, "%H:%M")
+    )
+
+    # Convert to AM/PM
+    formatted_slots = [
+        datetime.strptime(
+            slot,
+            "%H:%M"
+        ).strftime("%I:%M %p")
+        for slot in sorted_slots
+    ]
+
+    availability[data.date] = formatted_slots
+
+    doctor.availability = availability
 
     db.add(doctor)
     db.commit()
@@ -119,7 +162,6 @@ def get_availability_for_date(
     db: Session = Depends(get_db)
 ):
 
-    # Validate date format
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -150,4 +192,117 @@ def get_availability_for_date(
         "doctor_id": doctor.doctor_id,
         "date": date,
         "slots": availability[date]
+    }
+
+class RemoveAvailabilityRequest(BaseModel):
+    date: str
+    slots: List[str]
+
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, value: str):
+
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise ValueError(
+                "Date must be in YYYY-MM-DD format"
+            )
+
+        return value
+
+    @field_validator("slots")
+    @classmethod
+    def validate_slots(cls, value: List[str]):
+
+        pattern = r"^([01]\d|2[0-3]):([0-5]\d)$"
+
+        for slot in value:
+
+            if not re.fullmatch(pattern, slot):
+                raise ValueError(
+                    f"Invalid slot format: {slot}"
+                )
+
+        return value
+
+
+@router.delete("/{doctor_id}/availability")
+def remove_availability(
+    doctor_id: str,
+    data: RemoveAvailabilityRequest,
+    db: Session = Depends(get_db)
+):
+
+    doctor = db.scalar(
+        select(Doctor).where(
+            Doctor.doctor_id == doctor_id
+        )
+    )
+
+    if not doctor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor not found"
+        )
+
+    availability = dict(doctor.availability or {})
+
+    if data.date not in availability:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No availability found for this date"
+        )
+
+    # Convert existing AM/PM slots back to 24-hour format
+    existing_slots = []
+
+    for slot in availability[data.date]:
+
+        try:
+            converted = datetime.strptime(
+                slot,
+                "%I:%M %p"
+            ).strftime("%H:%M")
+
+            existing_slots.append(converted)
+
+        except:
+            existing_slots.append(slot)
+
+    # Remove requested slots
+    updated_slots = [
+        slot for slot in existing_slots
+        if slot not in data.slots
+    ]
+
+    # Sort remaining slots
+    updated_slots = sorted(
+        updated_slots,
+        key=lambda x: datetime.strptime(x, "%H:%M")
+    )
+
+    # Convert back to AM/PM
+    formatted_slots = [
+        datetime.strptime(
+            slot,
+            "%H:%M"
+        ).strftime("%I:%M %p")
+        for slot in updated_slots
+    ]
+
+    # If no slots left, remove date completely
+    if not formatted_slots:
+        del availability[data.date]
+
+    else:
+        availability[data.date] = formatted_slots
+
+    doctor.availability = availability
+
+    db.commit()
+    db.refresh(doctor)
+
+    return {
+        "message": "Availability removed successfully",
+        "doctor_id": doctor.doctor_id,
+        "availability": doctor.availability
     }
