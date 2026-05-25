@@ -1,5 +1,7 @@
 from sqlalchemy import String, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime
+from datetime import datetime
 
 from database import Base
 
@@ -12,6 +14,6 @@ class MedicalRecord(Base):
     file_path:   Mapped[str]           = mapped_column(String(500))
     file_type:   Mapped[str]           = mapped_column(String(50))
     size_kb:     Mapped[float]         = mapped_column(Float, default=0.0)
-    uploaded_at: Mapped[str]           = mapped_column(String(30))
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime)
 
 

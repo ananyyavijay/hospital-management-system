@@ -28,7 +28,6 @@ from schemas.medical_record import (
 
 
 router = APIRouter(
-    prefix="/patients",
     tags=["Medical Records"]
 )
 
@@ -60,7 +59,7 @@ def generate_record_id(db: Session):
 )
 async def upload_record(
     patient_id: str,
-    file: UploadFile = File(...),
+    file: UploadFile = File(..., media_type="image/jpeg"),
     db: Session = Depends(get_db)
 ):
 

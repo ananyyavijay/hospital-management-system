@@ -9,6 +9,7 @@ from models.patient     import Patient      # noqa
 from models.doctor      import Doctor       # noqa
 from models.appointment import Appointment  # noqa
 from models.user import User
+from models.medical_record import MedicalRecord
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

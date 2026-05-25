@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 
 
 class MedicalRecordResponse(BaseModel):
@@ -9,4 +10,4 @@ class MedicalRecordResponse(BaseModel):
     filename: str
     file_type: str
     size_kb: float
-    uploaded_at: str
+    uploaded_at: datetime
