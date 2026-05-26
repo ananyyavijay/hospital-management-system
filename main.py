@@ -10,7 +10,7 @@ import asyncio
 from fastapi import FastAPI
 from db.connection import get_connection
 from routers import patients, doctors, appointments, auth, availability, dashboard, records, admin
-
+import os
 from models.patient import Patient
 from models.doctor import Doctor
 from models.appointment import Appointment
@@ -20,7 +20,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Hospital Management System",
-    version="2.0.0"
+    version="2.0.0",
+    description="HMS v2 — FastAPI + PostgreSQL + Azure"
 )
 
 app.add_middleware(
@@ -35,6 +36,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    """
+    Health check — does NOT touch the database.
+    Returns 200 when the app process is running.
+    """
+    return {
+        "status": "ok",
+        "service": "HMS API",
+        "version": "2.0.0",
+        "environment": os.getenv("APP_ENV", "unknown")
+    }
 
 app.include_router(
     auth.router,
@@ -88,9 +102,6 @@ app.include_router(
 def home():
     return {"message": "Hospital API Running"}
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
 
 
 async def main():
