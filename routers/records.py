@@ -31,7 +31,9 @@ router = APIRouter(
     tags=["Medical Records"]
 )
 
-UPLOAD_ROOT = Path("./uploads")
+UPLOAD_ROOT = Path(
+    os.getenv("UPLOAD_DIR", "./uploads")
+)
 
 
 ALLOWED_TYPES = {

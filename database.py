@@ -9,12 +9,19 @@ from dotenv import load_dotenv
 
 load_dotenv()  # loads .env locally; on Azure env vars are already set — no-op
 
-DB_HOST     = os.getenv("DB_HOST",     "localhost")
-DB_PORT     = os.getenv("DB_PORT",     "5432")
-DB_NAME     = os.getenv("DB_NAME",     "hospital_db")
-DB_USER     = os.getenv("DB_USER",     "hms_user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_SSL      = os.getenv("DB_SSL",      "prefer")  # "require" on Azure
+# DB_HOST     = os.getenv("DB_HOST",     "localhost")
+# DB_PORT     = os.getenv("DB_PORT",     "5432")
+# DB_NAME     = os.getenv("DB_NAME",     "hospital_db")
+# DB_USER     = os.getenv("DB_USER",     "hms_user")
+# DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+# DB_SSL      = os.getenv("DB_SSL",      "prefer")  # "require" on Azure
+
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_SSL = os.getenv("DB_SSL", "require")
 
 DATABASE_URL = (
     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"

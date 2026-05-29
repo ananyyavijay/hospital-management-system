@@ -2,10 +2,18 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-SECRET_KEY = "hms_secret_key_must_be_32_chars!"
-ALGORITHM  = "HS256"
+SECRET_KEY = os.getenv("JWT_SECRET")
+
+if not SECRET_KEY:
+    raise ValueError("JWT_SECRET environment variable is not set")
+
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
