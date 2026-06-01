@@ -165,3 +165,31 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+TOKEN_DETAILS = """
+=== Key Technical Details ===
+
+1. pool_recycle=3000:
+   Tokens expire in ~3600 seconds (60 min).
+   Recycling connections at 3000s (50 min) ensures a fresh token is fetched
+   before the existing one expires. Prevents mid-session auth failures.
+
+2. creator= parameter:
+   Passing a custom 'creator' function to create_engine() bypasses SQLAlchemy's
+   normal URL parsing and calls your function for each new connection.
+   This is how we inject a fresh token every 50 minutes.
+
+3. DB_USER on Azure = 'hms-app-ananya' (the MI display name):
+   Not 'hmsadmin' anymore. The admin user is only needed for setup.
+   The app now connects as the Managed Identity role.
+
+4. AZURE_POSTGRES_SCOPE:
+   'https://ossrdbms-aad.database.windows.net/.default'
+   This scope tells Entra ID to issue a token for Azure Database for PostgreSQL.
+   Without this exact scope, the token will be rejected by PostgreSQL.
+
+5. azure-identity package:
+   Add to requirements.txt: azure-identity
+   ManagedIdentityCredential() auto-detects the MI on App Service.
+   Locally it fails — that's why we branch on APP_ENV.
+"""
