@@ -30,7 +30,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
-    op.drop_column('doctors', 'contact_email')
+    # op.drop_column('doctors', 'contact_email')
     # ### end Alembic commands ###
 
 

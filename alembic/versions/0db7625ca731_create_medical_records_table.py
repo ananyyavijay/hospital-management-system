@@ -22,60 +22,62 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
 
-    op.create_table(
-        'medical_records',
+    # op.create_table(
+    #     'medical_records',
 
-        sa.Column(
-            'id',
-            sa.Integer(),
-            nullable=False
-        ),
+    #     sa.Column(
+    #         'id',
+    #         sa.Integer(),
+    #         nullable=False
+    #     ),
 
-        sa.Column(
-            'patient_id',
-            sa.Integer(),
-            nullable=False
-        ),
+    #     sa.Column(
+    #         'patient_id',
+    #         sa.Integer(),
+    #         nullable=False
+    #     ),
 
-        sa.Column(
-            'doctor_id',
-            sa.Integer(),
-            nullable=False
-        ),
+    #     sa.Column(
+    #         'doctor_id',
+    #         sa.Integer(),
+    #         nullable=False
+    #     ),
 
-        sa.Column(
-            'diagnosis',
-            sa.String(),
-            nullable=False
-        ),
+    #     sa.Column(
+    #         'diagnosis',
+    #         sa.String(),
+    #         nullable=False
+    #     ),
 
-        sa.Column(
-            'prescription',
-            sa.String(),
-            nullable=False
-        ),
+    #     sa.Column(
+    #         'prescription',
+    #         sa.String(),
+    #         nullable=False
+    #     ),
 
-        sa.Column(
-            'notes',
-            sa.String(),
-            nullable=True
-        ),
+    #     sa.Column(
+    #         'notes',
+    #         sa.String(),
+    #         nullable=True
+    #     ),
 
-        sa.ForeignKeyConstraint(
-            ['patient_id'],
-            ['patients.id']
-        ),
+    #     sa.ForeignKeyConstraint(
+    #         ['patient_id'],
+    #         ['patients.id']
+    #     ),
 
-        sa.ForeignKeyConstraint(
-            ['doctor_id'],
-            ['doctors.id']
-        ),
+    #     sa.ForeignKeyConstraint(
+    #         ['doctor_id'],
+    #         ['doctors.id']
+    #     ),
 
-        sa.PrimaryKeyConstraint('id')
-    )
+    #     sa.PrimaryKeyConstraint('id')
+    # )
+    pass
 
 
 def downgrade() -> None:
     """Downgrade schema."""
 
-    op.execute("DROP TABLE IF EXISTS medical_records")
+    # op.execute("DROP TABLE IF EXISTS medical_records")
+    pass
