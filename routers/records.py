@@ -338,7 +338,7 @@ async def upload_record(
         raise HTTPException(
             status_code=500,
             detail=f"Blob upload failed: {str(e)}"
-    )
+        )
 
     # Save metadata to DB
     record = MedicalRecord(
@@ -360,7 +360,7 @@ async def upload_record(
         raise HTTPException(
             status_code=500,
             detail=f"Database insert failed: {str(e)}"
-    )
+        )
     return record
 
 
@@ -377,7 +377,7 @@ def list_records(
     if not patient:
         raise HTTPException(404, f"Patient {patient_id} not found")
     return db.scalars(
-        select(MedicalRecord).where(MedicalRecord.patient_id == patient_id)
+        select(MedicalRecord).where(MedicalRecord.patient_id == patient.id)
     ).all()
 
 
@@ -389,10 +389,22 @@ def download_record(
     db: Session = Depends(get_db)
 ):
     """Generate a time-limited SAS download URL for a medical record."""
-    record = db.scalars(select(MedicalRecord).where(
-        MedicalRecord.record_id  == record_id,
-        MedicalRecord.patient_id == patient_id
-    )).first()
+    patient = db.scalars(
+        select(Patient).where(
+            Patient.patient_id == patient_id
+        )
+    ).first()
+
+    if not patient:
+        raise HTTPException(404, "Patient not found")
+
+    record = db.scalars(
+        select(MedicalRecord).where(
+            MedicalRecord.record_id == record_id,
+            MedicalRecord.patient_id == patient.id
+        )
+    ).first()
+    
     if not record:
         raise HTTPException(404, f"Record {record_id} not found")
 
