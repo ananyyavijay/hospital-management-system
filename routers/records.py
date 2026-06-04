@@ -263,15 +263,27 @@ ALLOWED_TYPES = {"application/pdf", "image/jpeg", "image/png"}
 #             "or set APP_ENV=production to use Managed Identity."
 #         )
 
+# def _get_blob_service_client():
+#     from azure.storage.blob import BlobServiceClient
+
+#     account_key = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
+
+#     return BlobServiceClient(
+#         account_url=ACCOUNT_URL,
+#         credential=account_key
+#     )
+
 def _get_blob_service_client():
     from azure.storage.blob import BlobServiceClient
 
-    account_key = os.getenv("STORAGE_ACCOUNT_KEY", "")
+    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
-    return BlobServiceClient(
-        account_url=ACCOUNT_URL,
-        credential=account_key
-    )
+    if not conn_str:
+        raise RuntimeError(
+            "AZURE_STORAGE_CONNECTION_STRING is not configured"
+        )
+
+    return BlobServiceClient.from_connection_string(conn_str)
 
 def _upload_to_blob(content: bytes, blob_name: str) -> str:
     """Upload bytes to Blob Storage. Returns the plain blob URL."""
