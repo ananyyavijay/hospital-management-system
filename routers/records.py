@@ -331,21 +331,36 @@ async def upload_record(
 
     # Upload to Blob Storage
     blob_name = _blob_name(patient_id, record_id, file.filename)
-    blob_url  = _upload_to_blob(content, blob_name)
+    try:
+        blob_url = _upload_to_blob(content, blob_name)
+    except Exception as e:
+        logger.exception("Blob upload failed")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Blob upload failed: {str(e)}"
+    )
 
     # Save metadata to DB
     record = MedicalRecord(
         record_id   = record_id,
-        patient_id  = patient_id,
+        patient_id  = patient.id,
         filename    = file.filename,
         blob_url    = blob_url,
         file_type   = file.content_type,
         size_kb     = size_kb,
-        uploaded_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        uploaded_at = datetime.now(timezone.utc),
     )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
+    try:
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+    except Exception as e:
+        db.rollback()
+        logger.exception("Database insert failed")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database insert failed: {str(e)}"
+    )
     return record
 
 

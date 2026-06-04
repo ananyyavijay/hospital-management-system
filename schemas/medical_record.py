@@ -19,7 +19,7 @@ class MedicalRecordOut(BaseModel):
     filename:    str
     file_type:   str
     size_kb:     float
-    uploaded_at: str
+    uploaded_at: datetime
     # blob_url intentionally not returned — use /download to get SAS URL
 
 
