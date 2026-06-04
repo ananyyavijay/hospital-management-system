@@ -224,11 +224,11 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from typing import List
-
 from database import get_db
 from models.medical_record import MedicalRecord
 from models.patient import Patient
 from schemas.medical_record  import MedicalRecordOut, RecordDownloadOut 
+from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 
 logger = logging.getLogger(__name__)
 
@@ -295,24 +295,35 @@ def _upload_to_blob(content: bytes, blob_name: str) -> str:
 
 
 def _generate_sas_url(blob_name: str, expiry_minutes: int = 60) -> str:
-    """Generate a user delegation SAS URL valid for expiry_minutes."""
-    from azure.storage.blob import BlobSasPermissions, generate_blob_sas
-    client = _get_blob_service_client()
-    now    = datetime.now(timezone.utc)
-    expiry = now + timedelta(minutes=expiry_minutes)
-    key = client.get_user_delegation_key(
-        key_start_time=now,
-        key_expiry_time=expiry
+    """
+    Generate a SAS URL using the storage account key.
+    Works with connection-string authentication.
+    """
+
+    expiry = datetime.now(timezone.utc) + timedelta(
+        minutes=expiry_minutes
     )
-    sas = generate_blob_sas(
+
+    account_key = os.getenv("STORAGE_ACCOUNT_KEY")
+
+    if not account_key:
+        raise RuntimeError(
+            "STORAGE_ACCOUNT_KEY is not configured"
+        )
+
+    sas_token = generate_blob_sas(
         account_name=STORAGE_ACCOUNT,
         container_name=CONTAINER,
         blob_name=blob_name,
-        user_delegation_key=key,
+        account_key=account_key,
         permission=BlobSasPermissions(read=True),
         expiry=expiry,
     )
-    return f"{ACCOUNT_URL}/{CONTAINER}/{blob_name}?{sas}"
+
+    return (
+        f"{ACCOUNT_URL}/{CONTAINER}/{blob_name}"
+        f"?{sas_token}"
+    )
 
 
 def _blob_name(patient_id: str, record_id: str, filename: str) -> str:

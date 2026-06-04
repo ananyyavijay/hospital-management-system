@@ -15,7 +15,7 @@ from datetime import datetime
 class MedicalRecordOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     record_id:   str
-    patient_id:  str
+    patient_id:  int
     filename:    str
     file_type:   str
     size_kb:     float
