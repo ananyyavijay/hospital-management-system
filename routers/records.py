@@ -243,26 +243,35 @@ APP_ENV         = os.getenv("APP_ENV", "development")
 ALLOWED_TYPES = {"application/pdf", "image/jpeg", "image/png"}
 
 
-def _get_blob_service_client():
-    """Return an authenticated BlobServiceClient.
-    Uses Managed Identity on Azure, falls back to connection string locally."""
-    from azure.storage.blob import BlobServiceClient
-    if APP_ENV == "production":
-        from azure.identity import ManagedIdentityCredential
-        return BlobServiceClient(
-            account_url=ACCOUNT_URL,
-            credential=ManagedIdentityCredential()
-        )
-    else:
-        # Local dev: use connection string from .env
-        conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
-        if conn_str:
-            return BlobServiceClient.from_connection_string(conn_str)
-        raise RuntimeError(
-            "Set AZURE_STORAGE_CONNECTION_STRING in .env for local dev, "
-            "or set APP_ENV=production to use Managed Identity."
-        )
+# def _get_blob_service_client():
+#     """Return an authenticated BlobServiceClient.
+#     Uses Managed Identity on Azure, falls back to connection string locally."""
+#     from azure.storage.blob import BlobServiceClient
+#     if APP_ENV == "production":
+#         from azure.identity import ManagedIdentityCredential
+#         return BlobServiceClient(
+#             account_url=ACCOUNT_URL,
+#             credential=ManagedIdentityCredential()
+#         )
+#     else:
+#         # Local dev: use connection string from .env
+#         conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
+#         if conn_str:
+#             return BlobServiceClient.from_connection_string(conn_str)
+#         raise RuntimeError(
+#             "Set AZURE_STORAGE_CONNECTION_STRING in .env for local dev, "
+#             "or set APP_ENV=production to use Managed Identity."
+#         )
 
+def _get_blob_service_client():
+    from azure.storage.blob import BlobServiceClient
+
+    account_key = os.getenv("STORAGE_ACCOUNT_KEY", "")
+
+    return BlobServiceClient(
+        account_url=ACCOUNT_URL,
+        credential=account_key
+    )
 
 def _upload_to_blob(content: bytes, blob_name: str) -> str:
     """Upload bytes to Blob Storage. Returns the plain blob URL."""
