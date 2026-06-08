@@ -402,6 +402,21 @@ Expected Response:
 
 ---
 
+## Project Wiki
+
+Detailed project documentation is available in the GitHub Wiki:
+
+- [HMS v2 Wiki](https://github.com/ananyyavijay/hospital-management-system/wiki)
+
+The wiki includes:
+- CI/CD Overview
+- HMS v2 Architecture
+- Development Workflow
+- Deployment Process
+- Project Documentation
+
+---
+
 ## Author
 
 **Ananya Vijay**
