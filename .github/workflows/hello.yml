@@ -2,6 +2,7 @@ name: Hello CI
 
 on: 
   push:
+  workflow_dispatch:
 
 jobs:
   hello:
@@ -26,6 +27,10 @@ jobs:
           echo "Commit SHA: ${{ github.sha }}" 
           echo "Actor: ${{ github.actor }}" 
           echo "Runner OS: ${{ runner.os }}"
+
+      - name: Push-specific step 
+        if: github.event_name == 'push' 
+        run: echo "This only runs on push, not on manual dispatch"
 
       - name: Hello Message
         run: |
