@@ -18,6 +18,8 @@ from models.medical_record import MedicalRecord
 from models.user import User
 from fastapi.middleware.cors import CORSMiddleware
 
+# Updated 10 Jun to main.py
+
 app = FastAPI(
     title="Hospital Management System",
     version="2.0.0",
