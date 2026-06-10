@@ -33,6 +33,7 @@ jobs:
       - name: Run tests with pytest
         env:
           APP_ENV: test
+          JWT_SECRET: test-secret-key
         run: |
           pytest tests/ -v --tb=short
 
