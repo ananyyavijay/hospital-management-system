@@ -71,7 +71,9 @@ jobs:
         with: { python-version: '3.11' }
       - run: pip install -r requirements.txt
       - run: pytest tests/ -v --tb=short
-        env: { APP_ENV: test }
+        env:
+          APP_ENV: test
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
   deploy:
     runs-on: ubuntu-latest
     needs: test
