@@ -59,7 +59,8 @@
 name: CD
 on:
   push:
-    branches: [main]
+    branches: 
+    - feature/hms-four-new-features
   workflow_dispatch:
 jobs:
   test:
