@@ -47,7 +47,7 @@ def health_check():
     """
     return {
         "status": "ok",
-        "service": "HMS API",
+        "service": "Hospital Management System v2 - CI/CD Enabled",
         "version": "2.0.0",
         "environment": os.getenv("APP_ENV", "unknown")
     }
