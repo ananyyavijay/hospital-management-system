@@ -406,4 +406,4 @@ Expected Response:
 
 **Ananya Vijay**
 
-B.Tech CSE, KIIT University
+B.Tech E&CSE, KIIT University
