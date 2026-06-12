@@ -1,38 +1,70 @@
-from dataclasses import dataclass, field, replace
-from typing import ClassVar
-from models.patient import Patient
-from models.doctor import Doctor
+from __future__ import annotations
+from sqlalchemy import (
+    String, Integer, Boolean, DateTime, ForeignKey, create_engine
+)
+from sqlalchemy.orm import (
+    DeclarativeBase, Mapped, mapped_column, relationship, Session
+)
 
-@dataclass(frozen=True)
-class Appointment:
-    """Immutable appointment record."""
-    _counter: ClassVar[int] = 0
+from sqlalchemy.sql import func
+from typing import Optional, List
+from datetime import datetime
+from database import Base
 
-    patient: Patient
-    doctor: Doctor
-    time_slot: str
-    status: str = "Scheduled"
-    appointment_id: str = field(init=False)
+class Appointment(Base):
+    __tablename__ = "appointments"
+    # Your columns and relationships here
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
 
-    def __post_init__(self) -> None:
-        Appointment._counter += 1
+    appointment_id: Mapped[str] = mapped_column(
+        String(10),
+        unique=True,
+        nullable=False
+    )
 
-        object.__setattr__(
-            self,
-            "appointment_id",
-            f"APT{Appointment._counter:04d}"
-        )
+    patient_id: Mapped[str] = mapped_column(
+        ForeignKey("patients.patient_id"),
+        nullable=False
+    )
 
-    def cancel(self) -> 'Appointment':
-        # ✏️ Return a new Appointment with status='Cancelled'
-        return replace(self, status = 'Cancelled')
+    doctor_id: Mapped[str] = mapped_column(
+        ForeignKey("doctors.doctor_id"),
+        nullable=False
+    )
 
-    def __str__(self) -> str:
-        # ✏️ Clean summary string
+    time_slot: Mapped[str] = mapped_column(
+        String(5),
+        nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="Scheduled"
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now()
+    )
+
+    patient: Mapped["Patient"] = relationship(
+        back_populates = "appointments"
+    )
+
+    doctor: Mapped["Doctor"] = relationship(
+        back_populates = "appointments"
+    )
+
+    def __repr__(self) -> str:
         return (
-            f"Appointment ID: {self.appointment_id}\n"
-            f"Patient       : {self.patient.name}\n"
-            f"Doctor        : {self.doctor.name}\n"
-            f"Time Slot     : {self.time_slot}\n"
-            f"Status        : {self.status}"
+            f"Appointment("
+            f"appointment_id='{self.appointment_id}', "
+            f"patient_id='{self.patient_id}', "
+            f"doctor_id='{self.doctor_id}', "
+            f"status='{self.status}'"
+            f")"
         )

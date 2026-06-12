@@ -8,6 +8,9 @@ from utils.decorators import log_action
 from models.patient import Patient
 from models.doctor import Doctor
 from models.appointment import Appointment
+import asyncio
+import time
+from typing import List, Tuple, Dict, Any
 
 
 class Hospital:
@@ -24,29 +27,70 @@ class Hospital:
     def register_doctor(self, doctor):
         self.doctors[doctor.doctor_id] = doctor
 
+    async def send_booking_notification(self, patient_name: str, slot: str) -> None:
+   
+        await asyncio.sleep(0.5)
+        print(f"[NOTIFICATION] Sent to {patient_name}: Appointment at {slot} confirmed")
+
     @log_action
-    def book_appointment(self, patient_id, doctor_id, time_slot):
-    
+    async def book_appointment(self,
+        patient_id: str,
+        doctor_id: str,
+        slot: str
+        ) -> Dict[str, Any]:
+
         if patient_id not in self.patients:
             raise PatientNotFoundError("Patient not found")
-        
+
         if doctor_id not in self.doctors:
             raise DoctorNotFoundError("Doctor not found")
-        
-        if not Doctor.validate_slot_format(time_slot):
-            raise ValueError("Invalid slot format")
-        
+
         doctor = self.doctors[doctor_id]
         patient = self.patients[patient_id]
-        
-        if time_slot not in doctor.available_slots:
-            raise SlotNotAvailableError("time slot not available")
-        
-        appointment = Appointment(patient, doctor, time_slot)
-        self.appointments[appointment.appointment_id] = appointment
 
-        doctor.remove_slot(time_slot)
+        if slot not in doctor.available_slots:
+            raise SlotNotAvailableError("Slot not available")
+        
+        await asyncio.sleep(0.5)
+        await  asyncio.sleep(0.1)
+
+        appointment = Appointment(
+        patient,
+        doctor,
+        slot
+        )
+        self.appointments[
+            appointment.appointment_id
+        ] = appointment
+
+        doctor.remove_slot(slot)
+        
+        print(f"Booked: {appointment}")
+        asyncio.create_task(self.send_booking_notification(patient_id, slot))
+
         return appointment
+    # def book_appointment(self, patient_id, doctor_id, time_slot):
+    
+    #     if patient_id not in self.patients:
+    #         raise PatientNotFoundError("Patient not found")
+        
+    #     if doctor_id not in self.doctors:
+    #         raise DoctorNotFoundError("Doctor not found")
+        
+    #     if not Doctor.validate_slot_format(time_slot):
+    #         raise ValueError("Invalid slot format")
+        
+    #     doctor = self.doctors[doctor_id]
+    #     patient = self.patients[patient_id]
+        
+    #     if time_slot not in doctor.available_slots:
+    #         raise SlotNotAvailableError("time slot not available")
+        
+    #     appointment = Appointment(patient, doctor, time_slot)
+    #     self.appointments[appointment.appointment_id] = appointment
+
+    #     doctor.remove_slot(time_slot)
+    #     return appointment
     
     @log_action
     def cancel_appointment(self, appointment_id):
