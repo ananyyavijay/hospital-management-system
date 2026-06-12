@@ -29,6 +29,7 @@ jobs:
         run: pytest tests/ -v --tb=short
         env:
           APP_ENV: test
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
   deploy:
     name: Deploy to Azure App Service
