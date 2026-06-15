@@ -1,5 +1,4 @@
 # tests/test_admin.py
-#
 
 def get_auth_token(client, email, password, role):
 
@@ -35,7 +34,7 @@ def test_patient_cannot_access_admin_patients(client):
     )
 
     response = client.get(
-        "/admin/admin/patients",
+        "admin/admin/patients",
         headers={
             "Authorization": f"Bearer {token}"
         }

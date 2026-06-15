@@ -1,3 +1,5 @@
+import pytest
+
 def get_auth_token(client):
 
     register_payload = {
@@ -39,3 +41,41 @@ def test_create_patients_returns_201(client):
     )
 
     assert response.status_code in [200, 201]
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "name": "testuser",
+            "blood_group": "B+",
+            "age": -1,
+            "contact": "987654"
+        },
+        {
+            "name": "",
+            "blood_group": "B+",
+            "age": 20,
+            "contact": "987654"
+        },
+        {
+            "blood_group": "B+",
+            "age": 20,
+            "contact": "987654"
+        }
+    ]
+)
+def test_create_patient_invalid_payload_returns_422(
+    client,
+    payload
+):
+    token = get_auth_token(client)
+
+    response = client.post(
+        "/patients",
+        json=payload,
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code == 422
