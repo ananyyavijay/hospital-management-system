@@ -438,9 +438,9 @@ cache: 'pip'
 
 | Run Type                             | Duration   |
 | ------------------------------------ | ---------- |
-| Before caching                       | XX seconds |
-| First run after caching (cache miss) | XX seconds |
-| Second run after caching (cache hit) | XX seconds |
+| Before caching                       | 22 seconds |
+| First run after caching (cache miss) | 22 seconds |
+| Second run after caching (cache hit) | 20 seconds |
 
 The first run creates the dependency cache. Subsequent runs restore cached packages, reducing installation time and improving pipeline performance.
 
