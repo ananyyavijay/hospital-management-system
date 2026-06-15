@@ -1,3 +1,5 @@
+import pytest
+
 def get_auth_token(client):
 
     register_payload = {
@@ -88,3 +90,35 @@ def test_create_appointment_invalid_doctor(client):
     )
 
     assert response.status_code in [404, 400]
+
+
+@pytest.mark.parametrize(
+    "patient_id,doctor_id,expected",
+    [
+        ("P999", "D001", [400, 404]),
+        ("P001", "D999", [400, 404]),
+        ("P999", "D999", [400, 404]),
+    ]
+)
+def test_appointment_validation(
+    client,
+    patient_id,
+    doctor_id,
+    expected
+):
+    token = get_auth_token(client)
+
+    response = client.post(
+        "/appointments/book",
+        json={
+            "patient_id": patient_id,
+            "doctor_id": doctor_id,
+            "time_slot": "10:00",
+            "status": "Scheduled"
+        },
+        headers={
+            "Authorization": f"Bearer {token}"
+        }
+    )
+
+    assert response.status_code in expected

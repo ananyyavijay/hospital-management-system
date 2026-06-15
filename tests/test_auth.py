@@ -1,6 +1,6 @@
 def test_register_user_returns_success(client):
     payload = {
-        "email" : "testuser@gmail.com",
+        "email" : "testuser2@gmail.com",
         "password" : "testuser123",
         "role" : "patient"
     }
@@ -10,14 +10,14 @@ def test_register_user_returns_success(client):
 
 def test_login_returns(client):
     register_payload = {
-    "email": "testuser@gmail.com",
+    "email": "testuser2@gmail.com",
     "password": "testuser123"
     }
 
     client.post("/auth/register", json=register_payload)
 
     login_payload = {
-    "username": "testuser@gmail.com",
+    "username": "testuser2@gmail.com",
     "password": "testuser123"
     }
 
