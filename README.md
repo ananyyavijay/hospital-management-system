@@ -392,6 +392,89 @@ Expected Response:
 
 ---
 
+## CI/CD Pipeline
+
+### Workflows
+
+| Workflow | Purpose                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml` | Runs automated tests and validation on every push and pull request. Uses a matrix strategy to test Python 3.10 and Python 3.11.          |
+| `cd.yml` | Runs deployment-gating tests, deploys the application to Azure App Service, verifies deployment health, and reports deployment failures. |
+
+### Environments
+
+| Environment | Branch       | Purpose                                             |
+| ----------- | ------------ | --------------------------------------------------- |
+| Staging     | `feature/**` | Validation and testing before production deployment |
+| Production  | `main`       | Live Azure deployment                               |
+
+### Pipeline Flow
+
+```text
+Developer Push
+      ↓
+CI Workflow (ci.yml)
+      ↓
+Matrix Testing (Python 3.10 & 3.11)
+      ↓
+CD Workflow (cd.yml)
+      ↓
+Pre-Deployment Tests (Python 3.11)
+      ↓
+Azure App Service Deployment
+      ↓
+Health Check Verification
+      ↓
+Production / Staging Environment
+```
+
+### Workflow Performance
+
+Dependency caching is enabled using:
+
+```yaml
+cache: 'pip'
+```
+
+| Run Type                             | Duration   |
+| ------------------------------------ | ---------- |
+| Before caching                       | XX seconds |
+| First run after caching (cache miss) | XX seconds |
+| Second run after caching (cache hit) | XX seconds |
+
+The first run creates the dependency cache. Subsequent runs restore cached packages, reducing installation time and improving pipeline performance.
+
+### Matrix Testing
+
+The CI workflow uses a matrix strategy with:
+
+* Python 3.10
+* Python 3.11
+
+This ensures compatibility across supported Python versions while keeping deployments aligned with the production runtime (Python 3.11).
+
+### Deployment Notifications
+
+The deployment workflow includes a failure notification step using:
+
+```yaml
+if: failure()
+```
+
+This creates GitHub Actions error annotations and makes deployment failures immediately visible.
+
+### Secrets Management
+
+See [docs/SECRETS.md](docs/SECRETS.md) for details on:
+
+* GitHub Secrets
+* Azure App Service Application Settings
+* Azure Key Vault
+* Managed Identity Authentication
+* JWT Secret Management
+
+---
+
 ## Future Enhancements
 
 - Automated Backups
