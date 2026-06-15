@@ -60,3 +60,12 @@ jobs:
           sleep 30
           curl -f https://hms-app-ananya.azurewebsites.net/health
           echo "Deployment verified!"
+
+      - name: Report deployment failure
+        if: failure()
+        run: |
+          echo "::error::Deployment to Azure failed!"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
