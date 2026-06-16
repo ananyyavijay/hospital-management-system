@@ -1,5 +1,6 @@
-from azure.storage.blob import BlobServiceClient
 import os
+
+from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 
 load_dotenv()

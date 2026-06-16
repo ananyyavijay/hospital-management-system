@@ -1,9 +1,10 @@
-from jose import jwt, JWTError
-from passlib.context import CryptContext
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-import os
+
 from dotenv import load_dotenv
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 load_dotenv()
 
@@ -15,10 +16,8 @@ if not SECRET_KEY:
 
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 # ✏️ Write hash_password
 def hash_password(plain: str) -> str:
@@ -42,31 +41,21 @@ def create_access_token(data: dict, expires_minutes: int = 60) -> str:
     now = datetime.now(timezone.utc)
     expire = now + timedelta(minutes=expires_minutes)
 
-    encode.update({
-        "iat": now,
-        "exp": expire
-    })
+    encode.update({"iat": now, "exp": expire})
 
-    token = jwt.encode(
-        encode,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+    token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
     return token
+
 
 # ✏️ Write decode_token
 def decode_token(token: str) -> Optional[dict]:
     """Decode and verify a JWT. Returns payload dict or None if invalid/expired."""
     # Your code here
     try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-        
+
     except JWTError:
         return None
 

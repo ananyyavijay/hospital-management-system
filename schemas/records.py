@@ -1,14 +1,11 @@
-from pydantic import BaseModel, ConfigDict
-from typing import Generic, TypeVar, List
+from typing import Generic, List, TypeVar
 
+from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
 
 
-class PaginatedResponse(
-    BaseModel,
-    Generic[T]
-):
+class PaginatedResponse(BaseModel, Generic[T]):
     total: int
     page: int
     limit: int
@@ -17,9 +14,7 @@ class PaginatedResponse(
 
 
 class AdminPatientOut(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
     patient_id: str
     name: str
@@ -28,9 +23,7 @@ class AdminPatientOut(BaseModel):
 
 
 class AdminDoctorOut(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
     doctor_id: str
     name: str
@@ -39,9 +32,7 @@ class AdminDoctorOut(BaseModel):
 
 
 class AdminAppointmentOut(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
     appointment_id: str
     patient_id: str

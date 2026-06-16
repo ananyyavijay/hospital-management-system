@@ -1,10 +1,10 @@
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Optional, Literal
 from datetime import datetime
-import re
-from models.appointment import Appointment
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 VALID_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+
 
 # PatientCreate
 class PatientCreate(BaseModel):
@@ -20,6 +20,7 @@ class PatientCreate(BaseModel):
         if value not in VALID_BLOOD_GROUPS:
             raise ValueError("Invalid Blood Group")
         return value
+
 
 # PatientResponse
 class PatientResponse(BaseModel):

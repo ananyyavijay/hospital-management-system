@@ -1,25 +1,20 @@
 def test_register_user_returns_success(client):
     payload = {
-        "email" : "testuser2@gmail.com",
-        "password" : "testuser123",
-        "role" : "patient"
+        "email": "testuser2@gmail.com",
+        "password": "testuser123",
+        "role": "patient",
     }
 
     response = client.post("/auth/register", json=payload)
     assert response.status_code in [200, 201]
 
+
 def test_login_returns(client):
-    register_payload = {
-    "email": "testuser2@gmail.com",
-    "password": "testuser123"
-    }
+    register_payload = {"email": "testuser2@gmail.com", "password": "testuser123"}
 
     client.post("/auth/register", json=register_payload)
 
-    login_payload = {
-    "username": "testuser2@gmail.com",
-    "password": "testuser123"
-    }
+    login_payload = {"username": "testuser2@gmail.com", "password": "testuser123"}
 
     response = client.post("/auth/login", data=login_payload)
 

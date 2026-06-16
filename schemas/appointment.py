@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Optional, Literal
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, field_validator
+
 
 class AppointmentCreate(BaseModel):
     # Your fields here — include slot format validator
@@ -9,7 +11,7 @@ class AppointmentCreate(BaseModel):
     doctor_id: str
     time_slot: str
     status: str = "Scheduled"
-    
+
     @field_validator("time_slot")
     @classmethod
     def validate_time_slot(cls, value):
@@ -19,7 +21,7 @@ class AppointmentCreate(BaseModel):
             raise ValueError("time_slot must be in HH:MM format")
 
         return value
-                     
+
 
 # ✏️ AppointmentResponse
 class AppointmentResponse(BaseModel):
