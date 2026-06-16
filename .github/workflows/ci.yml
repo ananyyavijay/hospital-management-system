@@ -12,6 +12,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+      name: Lint and format check
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.11"
+            cache: "pip"
+
+        - name: Install linting tools
+          run: pip install black isort flake8
+
+        - name: black — format check
+          run: black --check .
+
+        - name: isort — import sort check
+          run: isort --check-only .
+
+        - name: flake8 — lint
+          run: flake8 .
+
   test:
     name: Run pytest
     runs-on: ubuntu-latest
