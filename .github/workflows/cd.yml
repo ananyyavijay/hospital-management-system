@@ -7,10 +7,15 @@ on:
       - 'feature/**'
   workflow_dispatch:
 
+env:
+  ACR_REGISTRY: hmsacrananya.azurecr.io
+  IMAGE_NAME: hms-app
+
 jobs:
   test:
     name: Run tests before deploy
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +24,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: pip
 
       - name: Install dependencies
         run: |
@@ -32,34 +37,61 @@ jobs:
           APP_ENV: test
           JWT_SECRET: test-secret-123
 
-  deploy:
-    name: Deploy to Azure App Service
+  build-and-push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show target environment
-        run: |
-          echo "Branch: ${{ github.ref }}"
-          echo "Target environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}"
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Deploy to Azure App Service
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy Container to Azure App Service
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Deploy container
         uses: azure/webapps-deploy@v3
         with:
           app-name: hms-app-ananya
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+          images: ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Verify deployment
         run: |
-          echo "Waiting for app to restart..."
-          sleep 30
+          echo "Waiting for container to start..."
+          sleep 45
           curl -f https://hms-app-ananya.azurewebsites.net/health
-          echo "Deployment verified!"
+          echo "Container deployment verified!"
 
       - name: Report deployment failure
         if: failure()
