@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Optional, Literal
 from datetime import datetime
-import re
-from models.appointment import Appointment
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class DoctorCreate(BaseModel):
     name: str = Field(..., min_length=3)

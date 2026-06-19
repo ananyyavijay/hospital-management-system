@@ -1,6 +1,8 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List
 from datetime import datetime
+from typing import List
+
+from pydantic import BaseModel, ConfigDict
+
 
 class DashboardPatientInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True)

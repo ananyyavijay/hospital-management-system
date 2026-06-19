@@ -1,33 +1,22 @@
 import pytest
 
-def get_auth_token(client):
 
-    register_payload = {
-        "email": "testuser@gmail.com",
-        "password": "testuser123"
-    }
+def get_auth_token(client):
+    register_payload = {"email": "testuser@gmail.com", "password": "testuser123"}
 
     client.post("/auth/register", json=register_payload)
 
-    login_payload = {
-        "username": "testuser@gmail.com",
-        "password": "testuser123"
-    }
+    login_payload = {"username": "testuser@gmail.com", "password": "testuser123"}
 
-    response = client.post(
-        "/auth/login",
-        data=login_payload
-    )
+    response = client.post("/auth/login", data=login_payload)
 
     return response.json()["access_token"]
 
-def test_create_appointment_returns_201(client):
 
+def test_create_appointment_returns_201(client):
     token = get_auth_token(client)
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
     patient_response = client.post(
         "/patients",
@@ -35,58 +24,51 @@ def test_create_appointment_returns_201(client):
             "name": "Ananya",
             "blood_group": "A+",
             "age": 22,
-            "contact": "9876543210"
+            "contact": "9876543210",
         },
-        headers=headers
+        headers=headers,
     )
 
     print(patient_response.json())
 
     doctor_response = client.post(
         "/doctors",
-        json={
-            "name": "Dr Sharma",
-            "specialization": "Cardiology"
-        },
-        headers=headers
+        json={"name": "Dr Sharma", "specialization": "Cardiology"},
+        headers=headers,
     )
 
     print(doctor_response.json())
 
-def test_create_appointment_invalid_patient(client):
 
+def test_create_appointment_invalid_patient(client):
     token = get_auth_token(client)
 
     payload = {
         "patient_id": "P999",
         "doctor_id": "D001",
         "time_slot": "10:00",
-        "status": "Scheduled"
+        "status": "Scheduled",
     }
 
     response = client.post(
-        "/appointments/book",
-        json=payload,
-        headers={"Authorization": f"Bearer {token}"}
+        "/appointments/book", json=payload, headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code in [404, 400]
 
-def test_create_appointment_invalid_doctor(client):
 
+def test_create_appointment_invalid_doctor(client):
     token = get_auth_token(client)
 
     payload = {
         "patient_id": "P001",
         "doctor_id": "D999",
         "time_slot": "10:00",
-        "status": "Scheduled"
+        "status": "Scheduled",
     }
 
     response = client.post(
-        "/appointments/book",
-        json=payload,
-        headers={"Authorization": f"Bearer {token}"}
+        "/appointments/book", json=payload, headers={"Authorization": f"Bearer {token}"}
     )
 
     assert response.status_code in [404, 400]
@@ -98,14 +80,9 @@ def test_create_appointment_invalid_doctor(client):
         ("P999", "D001", [400, 404]),
         ("P001", "D999", [400, 404]),
         ("P999", "D999", [400, 404]),
-    ]
+    ],
 )
-def test_appointment_validation(
-    client,
-    patient_id,
-    doctor_id,
-    expected
-):
+def test_appointment_validation(client, patient_id, doctor_id, expected):
     token = get_auth_token(client)
 
     response = client.post(
@@ -114,11 +91,9 @@ def test_appointment_validation(
             "patient_id": patient_id,
             "doctor_id": doctor_id,
             "time_slot": "10:00",
-            "status": "Scheduled"
+            "status": "Scheduled",
         },
-        headers={
-            "Authorization": f"Bearer {token}"
-        }
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     assert response.status_code in expected

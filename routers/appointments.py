@@ -1,69 +1,53 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
 
 from database import get_db
-from models.appointment import Appointment
-from models.patient import Patient
-from models.doctor import Doctor
-from schemas.appointment import (
-    AppointmentCreate,
-    AppointmentResponse
-)
 from dependencies import get_current_user
+from models.appointment import Appointment
+from models.doctor import Doctor
+from models.patient import Patient
 from models.user import User
+from schemas.appointment import AppointmentCreate, AppointmentResponse
 
 router = APIRouter()
 
 
 # Generate Appointment ID
 def generate_appointment_id(db: Session):
-
-    count = db.scalar(
-        select(func.count()).select_from(Appointment)
-    ) + 1
+    count = db.scalar(select(func.count()).select_from(Appointment)) + 1
 
     return f"A{count:03d}"
 
+
 # Create Appointment
 @router.post(
-    "/book",
-    response_model=AppointmentResponse,
-    status_code=status.HTTP_201_CREATED
+    "/book", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED
 )
 def create_appointment(
     appointment: AppointmentCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-    ):
-
+    current_user: User = Depends(get_current_user),
+):
     # Check Patient
     patient_query = select(Patient).where(
-        Patient.patient_id == appointment.patient_id,
-        Patient.is_active == True
+        Patient.patient_id == appointment.patient_id, Patient.is_active.is_(True)
     )
 
     patient = db.execute(patient_query).scalar_one_or_none()
 
     if patient is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Patient not found"
-        )
+        raise HTTPException(status_code=404, detail="Patient not found")
 
     # Check Doctor
     doctor_query = select(Doctor).where(
-        Doctor.doctor_id == appointment.doctor_id,
-        Doctor.is_active == True
+        Doctor.doctor_id == appointment.doctor_id, Doctor.is_active.is_(True)
     )
 
     doctor = db.execute(doctor_query).scalar_one_or_none()
 
     if doctor is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Doctor not found"
-        )
+        raise HTTPException(status_code=404, detail="Doctor not found")
 
     # Generate Appointment ID
     appointment_id = generate_appointment_id(db)
@@ -74,7 +58,7 @@ def create_appointment(
         patient_id=appointment.patient_id,
         doctor_id=appointment.doctor_id,
         time_slot=appointment.time_slot,
-        status=appointment.status
+        status=appointment.status,
     )
 
     db.add(new_appointment)
@@ -90,19 +74,13 @@ def create_appointment(
         status=new_appointment.status,
         created_at=new_appointment.created_at,
         patient_name=patient.name,
-        doctor_name=doctor.name
+        doctor_name=doctor.name,
     )
 
 
 # List All Appointments
-@router.get(
-    "",
-    response_model=list[AppointmentResponse]
-)
-def list_appointments(
-    db: Session = Depends(get_db)
-):
-
+@router.get("", response_model=list[AppointmentResponse])
+def list_appointments(db: Session = Depends(get_db)):
     query = select(Appointment)
 
     appointments = db.execute(query).scalars().all()
@@ -110,7 +88,6 @@ def list_appointments(
     response = []
 
     for appointment in appointments:
-
         response.append(
             AppointmentResponse(
                 appointment_id=appointment.appointment_id,
@@ -120,7 +97,7 @@ def list_appointments(
                 status=appointment.status,
                 created_at=appointment.created_at,
                 patient_name=appointment.patient.name,
-                doctor_name=appointment.doctor.name
+                doctor_name=appointment.doctor.name,
             )
         )
 
@@ -128,26 +105,14 @@ def list_appointments(
 
 
 # Get Single Appointment
-@router.get(
-    "/{appointment_id}",
-    response_model=AppointmentResponse
-)
-def get_appointment(
-    appointment_id: str,
-    db: Session = Depends(get_db)
-):
-
-    query = select(Appointment).where(
-        Appointment.appointment_id == appointment_id
-    )
+@router.get("/{appointment_id}", response_model=AppointmentResponse)
+def get_appointment(appointment_id: str, db: Session = Depends(get_db)):
+    query = select(Appointment).where(Appointment.appointment_id == appointment_id)
 
     appointment = db.execute(query).scalar_one_or_none()
 
     if appointment is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Appointment not found"
-        )
+        raise HTTPException(status_code=404, detail="Appointment not found")
 
     return AppointmentResponse(
         appointment_id=appointment.appointment_id,
@@ -157,38 +122,26 @@ def get_appointment(
         status=appointment.status,
         created_at=appointment.created_at,
         patient_name=appointment.patient.name,
-        doctor_name=appointment.doctor.name
+        doctor_name=appointment.doctor.name,
     )
 
 
 # Cancel Appointment
-@router.put(
-    "/{appointment_id}/cancel",
-    response_model=AppointmentResponse
-)
+@router.put("/{appointment_id}/cancel", response_model=AppointmentResponse)
 def cancel_appointment(
     appointment_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-
-    query = select(Appointment).where(
-        Appointment.appointment_id == appointment_id
-    )
+    query = select(Appointment).where(Appointment.appointment_id == appointment_id)
 
     appointment = db.execute(query).scalar_one_or_none()
 
     if appointment is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Appointment not found"
-        )
+        raise HTTPException(status_code=404, detail="Appointment not found")
 
     if appointment.status == "Cancelled":
-        raise HTTPException(
-            status_code=400,
-            detail="Appointment already cancelled"
-        )
+        raise HTTPException(status_code=400, detail="Appointment already cancelled")
 
     appointment.status = "Cancelled"
 
@@ -203,5 +156,5 @@ def cancel_appointment(
         status=appointment.status,
         created_at=appointment.created_at,
         patient_name=appointment.patient.name,
-        doctor_name=appointment.doctor.name
+        doctor_name=appointment.doctor.name,
     )
